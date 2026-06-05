@@ -10,6 +10,7 @@ import logging
 import asyncio
 from pathlib import Path
 from typing import List, Optional, Dict, Any
+import json
 from datetime import datetime, timedelta, timezone
 import re
 import random
@@ -12659,10 +12660,17 @@ async def estimate_wedding_cost(
     try:
         design_key = request.get('design_key', '')
         selected_features = request.get('selected_features', [])
-        
+        # Optional explicit expiry tier id — resolves credits server-side
+        tier_id = request.get('expiry_tier') or ''
+        tier_credits = 0
+        if tier_id:
+            tier_doc = await db['expiry_tiers'].find_one({'id': tier_id})
+            if tier_doc and isinstance(tier_doc.get('credits'), (int, float)):
+                tier_credits = int(tier_doc['credits'])
         cost_breakdown = wedding_lifecycle_service.calculate_credit_cost(
             design_key,
-            selected_features
+            selected_features,
+            tier_credits,
         )
         
         return {
@@ -13111,6 +13119,106 @@ async def ai_generate_story(req: AIStoryRequest, admin_id: str = Depends(get_cur
 
 
 # ──────────────────────────────────────────────────────────────────────
+# AUTO-TRANSLATE — Gemini-powered translation of an invitation's text
+# fields into every language the photographer enabled in Features.
+# Stored on the profile under translations: {language: {field: value}}
+# ──────────────────────────────────────────────────────────────────────
+TRANSLATABLE_FIELDS = [
+    "bride_name", "groom_name", "venue", "venue_address", "story",
+    "wedding_invitation_text", "welcome_message",
+]
+
+
+@api_router.post("/admin/profiles/{profile_id}/translate")
+async def auto_translate_profile(
+    profile_id: str,
+    admin_id: str = Depends(get_current_admin),
+):
+    """Translate this wedding's main text fields into every additional
+    language the photographer enabled (couple.languages list).
+    Uses Gemini-2.5-flash via the Emergent Universal LLM Key."""
+    profile = await db.profiles.find_one({"id": profile_id})
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    if profile.get("admin_id") != admin_id:
+        # super_admin override
+        admin_doc = await db.admins.find_one({"id": admin_id})
+        if not admin_doc or admin_doc.get("role") not in ("super_admin", "SUPER_ADMIN"):
+            raise HTTPException(status_code=403, detail="Not your profile")
+
+    ts_maja = (profile.get("theme_settings") or {}).get("maja") or {}
+    additional_languages = ts_maja.get("languages") or profile.get("languages") or []
+    main_language = (profile.get("language") or ["english"])
+    if isinstance(main_language, list):
+        main_language = main_language[0] if main_language else "english"
+    languages = [l for l in additional_languages if str(l).lower() != str(main_language).lower()]
+    if not languages:
+        return {"translations": {}, "skipped": True, "reason": "No additional languages to translate."}
+
+    # Gather payload
+    payload = {f: profile.get(f) for f in TRANSLATABLE_FIELDS if profile.get(f)}
+    if not payload:
+        return {"translations": {}, "skipped": True, "reason": "No translatable fields populated."}
+
+    api_key = os.environ.get("EMERGENT_LLM_KEY", "")
+    if not api_key:
+        raise HTTPException(status_code=503, detail="LLM key not configured")
+
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    translations: Dict[str, Dict[str, str]] = {}
+    for lang in languages:
+        session_id = f"translate-{profile_id}-{lang}-{_ai_uuid.uuid4()}"
+        try:
+            chat = LlmChat(
+                api_key=api_key,
+                session_id=session_id,
+                system_message=(
+                    f"You are a professional translator. Translate the following Indian wedding invitation "
+                    f"fields from {main_language} into {lang}. Preserve names of people exactly. "
+                    f"Keep tone respectful and elegant. Return ONLY a valid JSON object with the same keys."
+                ),
+            ).with_model("gemini", "gemini-2.5-flash")
+            user_msg = UserMessage(text=json.dumps(payload, ensure_ascii=False))
+            raw = await chat.send_message(user_msg)
+            text = str(raw).strip()
+            # Strip markdown fences if any
+            if text.startswith("```"):
+                text = text.strip("`").lstrip("json").strip()
+                # remove any remaining backticks line
+                if text.endswith("```"):
+                    text = text[:-3].strip()
+            try:
+                obj = json.loads(text)
+            except Exception:
+                # crude fallback: keep raw under a single key
+                obj = {"_raw": text}
+            translations[str(lang).lower()] = obj
+        except Exception as e:
+            logger.warning(f"Translate {lang} failed: {e}")
+            translations[str(lang).lower()] = {"_error": str(e)[:200]}
+
+    await db.profiles.update_one(
+        {"id": profile_id},
+        {"$set": {"translations": translations, "translations_updated_at": datetime.now(timezone.utc).isoformat()}},
+    )
+    return {"translations": translations, "languages": list(translations.keys()), "skipped": False}
+
+
+@api_router.get("/admin/profiles/{profile_id}/translations")
+async def get_profile_translations(
+    profile_id: str,
+    admin_id: str = Depends(get_current_admin),
+):
+    profile = await db.profiles.find_one({"id": profile_id}, {"_id": 0, "translations": 1, "translations_updated_at": 1})
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return {
+        "translations": profile.get("translations", {}),
+        "updated_at": profile.get("translations_updated_at"),
+    }
+
+
+# ──────────────────────────────────────────────────────────────────────
 # EXPIRY TIERS — link-lifetime tiers exposed to the publish step
 # Admin-configurable via /api/admin/expiry-tiers (PUT)
 # ──────────────────────────────────────────────────────────────────────
@@ -13144,7 +13252,8 @@ async def update_expiry_tiers(payload: List[ExpiryTierIn], admin_id: str = Depen
     await db.expiry_tiers.delete_many({})
     if docs:
         await db.expiry_tiers.insert_many(docs)
-    return {"tiers": docs, "count": len(docs)}
+    out = await db.expiry_tiers.find({}, {"_id": 0}).sort("order", 1).to_list(50)
+    return {"tiers": out, "count": len(out)}
 
 
 # Alias for legacy reference: maps (slug, ip, device_id, endpoint) → (ip, device_id, endpoint, slug)

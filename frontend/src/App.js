@@ -37,6 +37,7 @@ const SuperAdminLogin = lazy(() => import('./pages/SuperAdminLogin'));
 const LuxurySuperAdminDashboard = lazy(() => import('./pages/LuxurySuperAdminDashboard'));
 const SuperAdminPricingHub = lazy(() => import('./pages/SuperAdminPricingHub'));
 const SuperAdminGiftCodes = lazy(() => import('./pages/SuperAdminGiftCodes'));
+const SuperAdminExpiryTiers = lazy(() => import('./pages/SuperAdminExpiryTiers'));
 const PurchaseFlowPage = lazy(() => import('./pages/PurchaseFlowPage'));
 const AccountCreditsPage = lazy(() => import('./pages/AccountCreditsPage'));
 const MobileScrollDiagnostic = lazy(() => import('./pages/MobileScrollDiagnostic'));
@@ -144,6 +145,7 @@ function App() {
                 <Route path="/super-admin/pricing-discounts" element={<SuperAdminPricingHub />} />
                 <Route path="/super-admin/pricing-editor" element={<SuperAdminPricingHub />} />
                 <Route path="/super-admin/credits" element={<SuperAdminPricingHub />} />
+                <Route path="/super-admin/expiry-tiers" element={<SuperAdminExpiryTiers />} />
 
                 {/* Photographer Admin */}
                 <Route path="/admin/login" element={<AdminLogin />} />

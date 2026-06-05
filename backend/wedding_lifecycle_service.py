@@ -24,22 +24,13 @@ class WeddingLifecycleService:
     def calculate_credit_cost(
         self,
         design_key: str,
-        selected_features: List[str]
+        selected_features: List[str],
+        expiry_tier_credits: int = 0,
     ) -> Dict[str, any]:
         """
-        Calculate total credit cost for a wedding
-        
-        Args:
-            design_key: Selected design/theme key
-            selected_features: List of feature keys enabled
-        
-        Returns:
-            Dict with breakdown: {
-                'total': int,
-                'design_cost': int,
-                'features_cost': int,
-                'breakdown': List[Dict]
-            }
+        Calculate total credit cost for a wedding.
+
+        Cost = design_cost + features_cost + expiry_tier_credits
         """
         breakdown = []
         design_cost = 0
@@ -66,14 +57,23 @@ class WeddingLifecycleService:
                     'type': 'addon',
                     'cost': feature.credit_cost
                 })
-        
-        total_cost = design_cost + features_cost
+
+        # Expiry-tier add-on
+        if expiry_tier_credits and expiry_tier_credits > 0:
+            breakdown.append({
+                'item': 'Link Expiry Tier',
+                'type': 'expiry',
+                'cost': int(expiry_tier_credits),
+            })
+
+        total_cost = design_cost + features_cost + int(expiry_tier_credits or 0)
         
         return {
             'total': total_cost,
             'design_cost': design_cost,
             'features_cost': features_cost,
-            'breakdown': breakdown
+            'expiry_cost': int(expiry_tier_credits or 0),
+            'breakdown': breakdown,
         }
     
     async def validate_slug_uniqueness(
@@ -164,11 +164,27 @@ class WeddingLifecycleService:
         if not is_ready:
             raise ValueError(f"Wedding not ready to publish. Missing: {', '.join(missing_fields)}")
         
-        # Step 4: Calculate credit cost
+        # Step 4: Calculate credit cost (including expiry-tier add-on)
         design_key = wedding.get('selected_design_key', wedding.get('design_id', ''))
         selected_features = wedding.get('selected_features', [])
-        
-        cost_breakdown = self.calculate_credit_cost(design_key, selected_features)
+
+        # Resolve expiry-tier credits — saved by the form under
+        # theme_settings.maja.expiry_tier (and/or top-level expiry_tier)
+        ts_maja = (wedding.get('theme_settings') or {}).get('maja') or {}
+        expiry_tier_id = (
+            ts_maja.get('expiry_tier')
+            or wedding.get('expiry_tier')
+            or '6_months'
+        )
+        expiry_tier_credits = 0
+        try:
+            tier_doc = await self.db['expiry_tiers'].find_one({'id': expiry_tier_id})
+            if tier_doc and isinstance(tier_doc.get('credits'), (int, float)):
+                expiry_tier_credits = int(tier_doc['credits'])
+        except Exception:
+            expiry_tier_credits = 0
+
+        cost_breakdown = self.calculate_credit_cost(design_key, selected_features, expiry_tier_credits)
         total_cost = cost_breakdown['total']
         
         # Step 5: Get admin credits

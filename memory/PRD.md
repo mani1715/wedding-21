@@ -3,71 +3,56 @@
 ## Origin
 Cloned from `https://github.com/mani1715/wedding-19` on 2026-06-05.
 Massive existing codebase (FastAPI + React) — luxury Indian wedding invitation
-SaaS for photographers.
+SaaS for photographers AND retail users (couples).
 
-## Problem statement (this iteration)
-The photographer panel had multiple paper-cuts:
-1. Couple photo upload returned **401 Unauthorized** because the field tried to
-   hit `/api/users/upload-image` (public-user endpoint) instead of an admin one.
-2. Theme step felt clumsy — the photographer wanted a guided 3-stage picker
-   (10 themes → 6 events → 3 designs) with credit costs surfaced and a real
-   preview that does NOT render as a white screen.
-3. Theme preview previously redirected to a route with poor styling.
-4. AI Story Composer needed to use **Gemini** (was Claude) and to redirect
-   focus into the form (not require scrolling up).
-5. The legacy "Events" step in the wizard duplicated what the new theme flow
-   already captures — needed to be removed.
-6. Venue step needed an optional **Parking** section (toggle + text + map link).
-7. Media step needed curated background-music presets.
-8. Features step needed **credit / Free** label per feature, and the
-   Multi-language flag needed a language picker.
-9. Publish step needed an **Expiry Tier** selector (1m/3m/6m/1y) whose
-   days & credits are admin-configurable.
+## What's been implemented this run (2026-06-05)
 
-## Architecture
-- Stack: **FastAPI + MongoDB** backend, **React (CRA)** frontend, **Supervisor**.
-- Auth: JWT bearer for photographer/admin, separate cookie/bearer for public
-  users (wedding guests).
-- AI: **Emergent Universal LLM Key** → Gemini-2.5-flash for story composer.
-- Media: Local `uploads/` dir served by FastAPI.
+### Iteration 1 — Photographer Panel Overhaul
+- `POST /api/admin/upload-image` — pre-save photographer photo upload
+- `GET /api/admin/expiry-tiers`, `PUT /api/admin/expiry-tiers`
+- `GET /api/music/presets` — 60 royalty-free tracks
+- `POST /api/admin/ai/story` → switched to Gemini-2.5-flash
+- New components: `ThemeDesignWizard`, `ThemeDesignPreviewModal`
+- `LuxuryProfileForm` — removed Events step, added Parking, MultiLangPicker,
+  ExpiryTierSelector, credit-cost labels in Features step
+- `PhotoUploadField` defaults to `admin-presave` mode (no more 401s)
 
-## What's been implemented (2026-06-05)
-### Backend
-- `POST /api/admin/upload-image` — pre-save photographer upload (no profile_id
-  required). Returns `{url, file_size}`.
-- `GET /api/admin/expiry-tiers` — seeds 4 defaults on first call.
-- `PUT /api/admin/expiry-tiers` — super-admin can replace the full tier list.
-- `GET /api/music/presets` — returns 60 royalty-free tracks across
-  devotional / classical / pleasant / cinematic / romantic moods.
-- `POST /api/admin/ai/story` — switched from Claude Sonnet 4.5 to
-  **Gemini-2.5-flash** via emergentintegrations.
+### Iteration 2 — Finish the 4 deferred items + Landing-page polish
+1. **Super-admin Expiry Tiers UI** at `/super-admin/expiry-tiers` —
+   `SuperAdminExpiryTiers.jsx` lets the owner add/edit/delete tiers
+   (days & credits fully customisable, e.g. 45 days = 2 credits).
+2. **Expiry-tier credits wired into publish cost**
+   `WeddingLifecycleService.calculate_credit_cost(design, features, expiry_credits)`
+   The publish flow now resolves `theme_settings.maja.expiry_tier`, looks up
+   `db.expiry_tiers`, and adds those credits to `total_cost`. The
+   `/api/weddings/estimate-cost` endpoint accepts `expiry_tier` too.
+3. **Background music piped into preview** — `ThemeDesignPreviewModal`
+   already accepted `couple.background_music_url`; `LuxuryProfileForm` now
+   passes `form.background_music_url` through `coupleData`.
+4. **Auto-translate with Gemini** —
+   `POST /api/admin/profiles/{id}/translate` translates every translatable
+   field into every additional language selected; stored under
+   `profile.translations[language] = {field: value, ...}`. UI: new
+   "Auto-translate with Gemini" button inside `MultiLangPicker`.
+5. **Landing page header cleanup** — when a normal user is signed in, the
+   "Photographer Studio" button is hidden; it reappears after sign-out.
 
-### Frontend
-- `LuxuryProfileForm` — removed `events` step; restructured Couple, Venue,
-  Features, Publish.
-- New `ThemeDesignWizard` (3-stage cascading picker w/ credit header).
-- New `ThemeDesignPreviewModal` (full-screen invitation preview with hero,
-  bride/groom slide-in cards, story, date/venue cards, closing — background
-  music auto-plays with mute toggle).
-- `PhotoUploadField` — defaults to `admin-presave` mode (no profile_id needed).
-- `FeatureFlagsPanel` — now shows `Free` or `N credit(s)` per flag.
-- `MultiLangPicker` — inline picker for additional languages.
-- `ExpiryTierSelector` — pulled from `/api/admin/expiry-tiers`.
+## What's verified
+- Iteration 1: testing agent — 100% frontend, 83% backend (1 flaky AI throttle)
+- Iteration 2: manual curl on `/api/weddings/estimate-cost` with `expiry_tier`
+  returns the correct `expiry_cost` and total; `/api/admin/expiry-tiers`
+  GET + PUT both work; translation endpoint validates correctly.
 
 ## Personas
-- **Photographer (admin)**: Creates and publishes invitations for clients.
-- **Super-admin**: Configures pricing, expiry tiers, themes, credits.
-- **Wedding guest (public user)**: Views the published invitation.
+- **Photographer (admin)** — creates and publishes invitations for clients.
+- **Super-admin** — configures pricing, expiry tiers, themes, credits.
+- **Normal User (couple)** — buys credits, picks design, creates their own
+  invitation. Flow exists at `/user/dashboard`, `/user/create-invitation`,
+  `/user/profile`, `/user/buy-credits`, but several gaps remain (see backlog).
 
 ## Backlog / Future
-- P1: Build the super-admin UI for editing expiry tiers (endpoint exists).
-- P2: Hook the chosen `expiry_tier` into the actual publish-cost calculation
-  on the backend (currently theme cost only).
-- P2: Auto-translate using Gemini for the additional languages selected.
-- P3: Wire the parking field into the public invitation venue card.
-- P3: Replace the demo soundhelix track in ThemeDesignPreviewModal with the
-  selected music_url from the form when available.
-
-## Verified (testing agent — iteration 1)
-100% frontend pass, 83% backend (single flaky AI throttle).
-All 9 wedding-wizard steps render and validate.
+- P1: Normal-user flow polish — see the "next chat" hand-off prompt
+- P2: Wire the parking card into the public invitation venue section
+- P2: Render translations on the public invite (language switcher pulls from
+  `profile.translations`)
+- P3: Multi-track music queue & crossfade on the live invitation

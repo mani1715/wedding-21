@@ -149,14 +149,18 @@ const Nav = ({ onLogin, user, onOpenAuth, onLogout, onBuyCredits, onUserDashboar
           Sign in
         </button>
       )}
-      <button onClick={onLogin}
-        className="lux-btn !px-3 !py-2 md:!px-5 md:!py-2.5 !text-[10px] md:!text-xs whitespace-nowrap"
-        data-testid="nav-photographer-login"
-      >
-        <Camera className="w-3.5 h-3.5 md:w-4 md:h-4 md:hidden" />
-        <span className="hidden md:inline">Photographer</span>
-        <span className="md:hidden">Studio</span>
-      </button>
+      {/* Photographer Studio entry — only when no user is signed in,
+          so the normal user header stays clean (Credits + Sign out + My Profile). */}
+      {!user && (
+        <button onClick={onLogin}
+          className="lux-btn !px-3 !py-2 md:!px-5 md:!py-2.5 !text-[10px] md:!text-xs whitespace-nowrap"
+          data-testid="nav-photographer-login"
+        >
+          <Camera className="w-3.5 h-3.5 md:w-4 md:h-4 md:hidden" />
+          <span className="hidden md:inline">Photographer</span>
+          <span className="md:hidden">Studio</span>
+        </button>
+      )}
     </div>
   </motion.nav>
 );

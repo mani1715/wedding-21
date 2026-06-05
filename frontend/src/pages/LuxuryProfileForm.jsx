@@ -1131,6 +1131,7 @@ const LuxuryProfileForm = () => {
                           mainLanguage={form.language}
                           languages={form.languages || []}
                           onChange={(langs) => setField('languages', langs)}
+                          profileId={id}
                         />
                       ),
                     },
@@ -1261,11 +1262,38 @@ const Select = ({ value, onChange, options, testid }) => (
 
 /* ── Multi-language sub-picker (used inside Features step) ──── */
 const ALL_LANGUAGES = ['English', 'Hindi', 'Tamil', 'Telugu', 'Bengali', 'Punjabi', 'Hinglish', 'Marathi', 'Gujarati', 'Kannada', 'Malayalam', 'Urdu', 'Odia', 'Assamese'];
-const MultiLangPicker = ({ mainLanguage, languages, onChange }) => {
+const MultiLangPicker = ({ mainLanguage, languages, onChange, profileId }) => {
+  const [translating, setTranslating] = React.useState(false);
+  const [translateMsg, setTranslateMsg] = React.useState('');
   const toggle = (l) => {
     if (l === mainLanguage) return;
     if (languages.includes(l)) onChange(languages.filter((x) => x !== l));
     else onChange([...languages, l]);
+  };
+  const runTranslate = async () => {
+    if (!profileId) {
+      setTranslateMsg('Save the draft once before translating.');
+      return;
+    }
+    if (!languages || languages.length === 0) {
+      setTranslateMsg('Pick at least one additional language first.');
+      return;
+    }
+    setTranslating(true);
+    setTranslateMsg('');
+    try {
+      const res = await axios.post(`${API_URL}/api/admin/profiles/${profileId}/translate`);
+      const langs = Object.keys(res.data?.translations || {});
+      if (res.data?.skipped) {
+        setTranslateMsg(res.data?.reason || 'Nothing to translate.');
+      } else {
+        setTranslateMsg(`Translated into ${langs.length} language${langs.length === 1 ? '' : 's'}: ${langs.join(', ')}`);
+      }
+    } catch (e) {
+      setTranslateMsg(e.response?.data?.detail || 'Translate failed');
+    } finally {
+      setTranslating(false);
+    }
   };
   return (
     <div className="rounded-lg p-3" style={{ background: 'rgba(255,248,220,0.04)', border: '1px solid rgba(212,175,55,0.2)' }}
@@ -1296,6 +1324,16 @@ const MultiLangPicker = ({ mainLanguage, languages, onChange }) => {
       <p className="text-[10px] mt-3" style={{ color: 'rgba(255,248,220,0.45)' }}>
         Tip: Pick the languages you want available on the public link. Guests can switch languages from the link header. The MAIN language is set in the <strong>Couple</strong> step.
       </p>
+      <div className="mt-3 flex items-center gap-3 flex-wrap">
+        <button type="button" onClick={runTranslate} disabled={translating}
+          className="lux-btn lux-btn-ghost text-[10px] inline-flex items-center gap-2"
+          data-testid="translate-now-btn">
+          {translating ? 'Translating…' : 'Auto-translate with Gemini'}
+        </button>
+        {translateMsg && (
+          <span className="text-[10px]" style={{ color: 'rgba(255,248,220,0.7)' }}>{translateMsg}</span>
+        )}
+      </div>
     </div>
   );
 };

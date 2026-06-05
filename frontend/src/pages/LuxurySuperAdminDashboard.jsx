@@ -225,6 +225,9 @@ const LuxurySuperAdminDashboard = () => {
               <button onClick={() => navigate('/super-admin/pricing')} className="lux-btn lux-btn-ghost" data-testid="pricing-hub-btn">
                 <Coins className="w-4 h-4" /> Credits &amp; Pricing
               </button>
+              <button onClick={() => navigate('/super-admin/expiry-tiers')} className="lux-btn lux-btn-ghost" data-testid="expiry-tiers-btn">
+                <Coins className="w-4 h-4" /> Expiry Tiers
+              </button>
             </div>
             <div className="relative w-full md:w-64">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,248,220,0.45)' }} />
