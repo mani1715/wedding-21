@@ -7,6 +7,24 @@ SaaS for photographers AND retail users (couples).
 
 ## What's been implemented this run (2026-06-05)
 
+### Iteration 4 — Polish round (2026-06-05)
+**Backend hardening**
+- New `DEFAULT_EXPIRY_TIERS` / `DEFAULT_USER_ADDONS` module constants in `user_features.py` and a new `seed_user_purchase_catalog(db)` async helper — wired into `server.py @app.on_event("startup")`. Public read endpoints no longer seed inline, eliminating the first-request race.
+- `POST /api/users/profiles/{id}/buy-addon` now takes a typed `BuyAddonRequest(BaseModel)` payload — invalid bodies return 422 (verified via 3 new pytest cases).
+- Backend test suite expanded to 11 passing (+ 1 intentional skip).
+
+**Frontend additions**
+- **NEW** `/app/frontend/src/pages/PublicPricingPage.jsx` (`/pricing` route). SEO-ready: dynamic `document.title`, meta description, `link[rel=canonical]`, and JSON-LD Product schema (id `maja-pricing-jsonld`). data-testids: `public-pricing-page`, `pricing-addons-section`, `pricing-expiry-section`, `pricing-addon-{id}`, `pricing-tier-{id}`, plus CTA testids.
+- `LandingPage.jsx` — `nav-pricing` anchor (visible only when user is not signed in).
+- `AccountCreditsPage.jsx` — round-trip support: parses `?return=` (same-origin only) and `?need=N`. Renders `wizard-return-banner` with a CTA that flips between "Back to wizard" (balance < need) and "Continue →" (balance >= need). Embedded "Buy credits" anchor also preserves the return query so the user lands back at the wizard after top-up.
+
+**Investigated**
+- 5-vs-4 expiry tier count flagged by previous testing agent → DB has exactly 4. No code change needed.
+
+**Tests**: `/app/backend/tests/test_user_purchase_wizard.py` — 11 passed / 1 skipped.
+
+
+
 ### Iteration 3 — Normal-user (couple) purchase flow (2026-06-05)
 **Backend (in `/app/backend/user_features.py`)**
 - `GET /api/public/expiry-tiers` (no auth) — lists expiry tiers (auto-seeds 4 defaults on first request)
