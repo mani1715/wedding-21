@@ -203,6 +203,40 @@ class TestBuyAddon:
         )
         assert r.status_code in (401, 403), f"Expected 401/403, got {r.status_code}"
 
+    def test_buy_addon_empty_body_returns_422(self, authed_session, profile_id):
+        """Empty {} body should fail Pydantic validation with 422."""
+        r = authed_session.post(
+            f"{BASE}/api/users/profiles/{profile_id}/buy-addon",
+            json={},
+            timeout=10,
+        )
+        assert r.status_code == 422, f"Expected 422, got {r.status_code}: {r.text[:200]}"
+        body = r.json()
+        # FastAPI's 422 includes 'detail' with 'addon_id' field reference
+        assert "addon_id" in r.text, f"422 body should mention addon_id: {r.text[:300]}"
+
+    def test_buy_addon_missing_addon_id_returns_422(self, authed_session, profile_id):
+        """Body without addon_id field returns 422."""
+        r = authed_session.post(
+            f"{BASE}/api/users/profiles/{profile_id}/buy-addon",
+            json={"foo": "bar"},
+            timeout=10,
+        )
+        assert r.status_code == 422
+        assert "addon_id" in r.text
+
+    def test_buy_addon_extra_unknown_fields_ok(self, authed_session, profile_id):
+        """Extra unknown fields should be ignored as long as addon_id is present.
+        Use an already-purchased addon to keep this idempotent."""
+        r = authed_session.post(
+            f"{BASE}/api/users/profiles/{profile_id}/buy-addon",
+            json={"addon_id": "music", "ignored_field": "abc", "another": 42},
+            timeout=10,
+        )
+        assert r.status_code == 200, f"Expected 200 with extra fields, got {r.status_code}: {r.text[:200]}"
+        body = r.json()
+        assert body.get("success") is True
+
     def test_buy_addon_insufficient_credits(self, authed_session, profile_id):
         """Try to spend more than the user has by buying every remaining addon.
         At least one of them should hit 402 once credits run out."""

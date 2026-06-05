@@ -39,6 +39,50 @@ def _razorpay_configured() -> bool:
     return True
 
 
+# ─────────────────────────────────────────────────────────────────────
+# Defaults seeded at app startup (see seed_user_purchase_catalog below).
+# Kept at module level so they're trivially overridable in tests.
+# ─────────────────────────────────────────────────────────────────────
+DEFAULT_EXPIRY_TIERS = [
+    {"id": "1_month",  "label": "1 Month",  "days": 30,  "credits": 1, "order": 1},
+    {"id": "3_months", "label": "3 Months", "days": 90,  "credits": 2, "order": 2},
+    {"id": "6_months", "label": "6 Months", "days": 180, "credits": 3, "order": 3},
+    {"id": "1_year",   "label": "1 Year",   "days": 365, "credits": 5, "order": 4},
+]
+
+DEFAULT_USER_ADDONS = [
+    {"id": "music",          "label": "Background Music",       "description": "Curated royalty-free score plays on the invitation.",     "credits": 1, "order": 1},
+    {"id": "live_gallery",   "label": "Live Photo Gallery",     "description": "Guests upload photos live during the wedding.",           "credits": 3, "order": 2},
+    {"id": "ai_story",       "label": "AI Story Composer",      "description": "Gemini writes a cinematic 'how we met' narrative.",        "credits": 2, "order": 3},
+    {"id": "rsvp",           "label": "Smart RSVP",             "description": "Guest list, +1 tracking and dietary preferences.",        "credits": 1, "order": 4},
+    {"id": "whatsapp",       "label": "WhatsApp Invites",       "description": "One-click WhatsApp share with personalised greetings.",   "credits": 1, "order": 5},
+    {"id": "parking",        "label": "Parking & Travel",       "description": "Parking map, drop-off zones and travel deep links.",       "credits": 1, "order": 6},
+    {"id": "gift_registry",  "label": "Gift Registry",          "description": "Optional gift list or 'no gifts please' note.",           "credits": 1, "order": 7},
+    {"id": "digital_shagun", "label": "Digital Shagun (UPI)",   "description": "Live UPI blessing counter shown on the invitation.",       "credits": 1, "order": 8},
+    {"id": "ai_face_match",  "label": "AI Face-Match Photos",   "description": "Guests find their photos via a single selfie.",           "credits": 3, "order": 9},
+    {"id": "save_the_date",  "label": "Save the Date teaser",   "description": "A teaser page that goes live before the main invitation.", "credits": 1, "order": 10},
+]
+
+
+async def seed_user_purchase_catalog(db) -> None:
+    """Idempotent startup seeder for the public user-purchase catalogue.
+
+    Runs once at app boot (called from server.py startup) so the lazy
+    seed inside the request handlers can never race two concurrent
+    first-time visitors.  Safe to re-call — uses count-then-insert.
+    """
+    try:
+        if await db.expiry_tiers.count_documents({}) == 0:
+            await db.expiry_tiers.insert_many(DEFAULT_EXPIRY_TIERS)
+            logger.info("seed_user_purchase_catalog: inserted %d expiry tiers", len(DEFAULT_EXPIRY_TIERS))
+        if await db.user_addons.count_documents({}) == 0:
+            await db.user_addons.insert_many(DEFAULT_USER_ADDONS)
+            logger.info("seed_user_purchase_catalog: inserted %d user addons", len(DEFAULT_USER_ADDONS))
+    except Exception as e:
+        # Log but don't crash boot on a seeding hiccup.
+        logger.exception("seed_user_purchase_catalog failed: %s", e)
+
+
 def _strip(d: Optional[dict]) -> Optional[dict]:
     if d is None:
         return d
@@ -60,6 +104,11 @@ class DesignPricingUpsert(BaseModel):
 
 class UserPurchaseOrderRequest(BaseModel):
     pack_id: str
+
+
+class BuyAddonRequest(BaseModel):
+    """Body for POST /api/users/profiles/{id}/buy-addon."""
+    addon_id: str = Field(min_length=1, max_length=64)
 
 
 class UserPurchaseVerifyRequest(BaseModel):
@@ -174,38 +223,16 @@ def build_user_features_router(
     @router.get("/api/public/expiry-tiers")
     async def public_expiry_tiers():
         """Returns the list of link-expiry tiers (days + credits) shown
-        in the user-facing PurchaseOptionsWizard. No auth required."""
-        # Seed defaults if collection is empty (mirrors /admin/expiry-tiers).
-        if await db.expiry_tiers.count_documents({}) == 0:
-            defaults = [
-                {"id": "1_month",  "label": "1 Month",  "days": 30,  "credits": 1, "order": 1},
-                {"id": "3_months", "label": "3 Months", "days": 90,  "credits": 2, "order": 2},
-                {"id": "6_months", "label": "6 Months", "days": 180, "credits": 3, "order": 3},
-                {"id": "1_year",   "label": "1 Year",   "days": 365, "credits": 5, "order": 4},
-            ]
-            await db.expiry_tiers.insert_many(defaults)
+        in the user-facing PurchaseOptionsWizard. No auth required.
+        Catalogue is seeded at app startup via seed_user_purchase_catalog().
+        """
         docs = await db.expiry_tiers.find({}, {"_id": 0}).sort("order", 1).to_list(50)
         return {"tiers": docs}
 
     # ── PUBLIC ADD-ON CATALOGUE — curated feature add-ons shown in the
-    # PurchaseOptionsWizard. Seeded on first request so the wizard always
-    # has something to render.
+    # PurchaseOptionsWizard.  Seeded at app startup; this endpoint just reads.
     @router.get("/api/public/addons")
     async def public_addons():
-        if await db.user_addons.count_documents({}) == 0:
-            defaults = [
-                {"id": "music",          "label": "Background Music",       "description": "Curated royalty-free score plays on the invitation.",         "credits": 1, "order": 1},
-                {"id": "live_gallery",   "label": "Live Photo Gallery",     "description": "Guests upload photos live during the wedding.",               "credits": 3, "order": 2},
-                {"id": "ai_story",       "label": "AI Story Composer",      "description": "Gemini writes a cinematic 'how we met' narrative.",            "credits": 2, "order": 3},
-                {"id": "rsvp",           "label": "Smart RSVP",             "description": "Guest list, +1 tracking and dietary preferences.",            "credits": 1, "order": 4},
-                {"id": "whatsapp",       "label": "WhatsApp Invites",       "description": "One-click WhatsApp share with personalised greetings.",       "credits": 1, "order": 5},
-                {"id": "parking",        "label": "Parking & Travel",       "description": "Parking map, drop-off zones and travel deep links.",           "credits": 1, "order": 6},
-                {"id": "gift_registry",  "label": "Gift Registry",          "description": "Optional gift list or 'no gifts please' note.",               "credits": 1, "order": 7},
-                {"id": "digital_shagun", "label": "Digital Shagun (UPI)",   "description": "Live UPI blessing counter shown on the invitation.",           "credits": 1, "order": 8},
-                {"id": "ai_face_match",  "label": "AI Face-Match Photos",   "description": "Guests find their photos via a single selfie.",               "credits": 3, "order": 9},
-                {"id": "save_the_date",  "label": "Save the Date teaser",   "description": "A teaser page that goes live before the main invitation.",     "credits": 1, "order": 10},
-            ]
-            await db.user_addons.insert_many(defaults)
         docs = await db.user_addons.find({}, {"_id": 0}).sort("order", 1).to_list(100)
         return {"addons": docs}
 
@@ -215,13 +242,11 @@ def build_user_features_router(
     @router.post("/api/users/profiles/{profile_id}/buy-addon")
     async def user_buy_addon(
         profile_id: str,
-        payload: dict,
+        payload: BuyAddonRequest,
         current=Depends(get_current_public_user),
     ):
         """Deduct credits and append the add-on to profile.add_ons."""
-        addon_id = (payload or {}).get("addon_id")
-        if not addon_id:
-            raise HTTPException(400, "addon_id is required")
+        addon_id = payload.addon_id
 
         profile = await db.profiles.find_one(
             {"id": profile_id, "user_id": current["user_id"]}, {"_id": 0}

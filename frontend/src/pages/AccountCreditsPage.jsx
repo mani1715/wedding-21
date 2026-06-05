@@ -9,9 +9,10 @@
  * Works for both photographer (`admin` role) and normal user (`user`) since
  * `get_current_admin` resolves either to a credit account.
  */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sparkles, Gift, CheckCircle, AlertCircle, ArrowDownLeft, ArrowUpRight, RotateCcw, Wallet, Copy, Users, RefreshCw } from 'lucide-react';
+import { Sparkles, Gift, CheckCircle, AlertCircle, ArrowDownLeft, ArrowUpRight, RotateCcw, Wallet, Copy, Users, RefreshCw, ArrowLeft, ArrowRight } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 
 const API = process.env.REACT_APP_BACKEND_URL || '';
@@ -27,6 +28,21 @@ const ACTION_META = {
 const fmt = (n) => Number(n || 0).toLocaleString('en-IN');
 
 export default function AccountCreditsPage() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  // ── Round-trip support: when a user is sent here from the
+  // PurchaseOptionsWizard because they were short on credits, the wizard
+  // appends ?return=/user/buy-design/...&need=N.  We render a sticky
+  // banner with a "Back to wizard" CTA and, once balance >= need, an
+  // auto-continue button so they don't have to manually navigate back.
+  const returnTo  = useMemo(() => {
+    const raw = searchParams.get('return') || '';
+    // Only honor SAME-ORIGIN paths (defence against open-redirect).
+    return raw && raw.startsWith('/') ? raw : '';
+  }, [searchParams]);
+  const needCredits = Number(searchParams.get('need') || 0);
+
   const [balance, setBalance] = useState({ total_credits: 0, used_credits: 0, available_credits: 0 });
   const [ledger, setLedger]   = useState([]);
   const [loading, setLoading] = useState(true);
@@ -143,6 +159,53 @@ export default function AccountCreditsPage() {
     <div className="min-h-screen px-5 sm:px-10 py-10" style={{ background: '#0a0a0a', color: '#F5ECD7' }} data-testid="account-credits-page">
       <div className="max-w-4xl mx-auto">
         <BackButton label="Back" />
+
+        {/* ── Round-trip banner — shown when user was sent here from the
+            PurchaseOptionsWizard because of insufficient credits. */}
+        {returnTo && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
+            className="mt-2 mb-4 rounded-xl p-4 flex items-center gap-3 flex-wrap"
+            style={{
+              background: 'linear-gradient(135deg, rgba(212,175,55,0.16), rgba(140,30,30,0.16))',
+              border: '1px solid rgba(212,175,55,0.35)',
+            }}
+            data-testid="wizard-return-banner"
+          >
+            <Sparkles className="w-4 h-4 shrink-0" style={{ color: '#D4AF37' }} />
+            <div className="flex-1 min-w-[200px] text-sm" style={{ color: '#FFF8DC' }}>
+              {needCredits > 0 ? (
+                <>You were just <span className="text-gold">{needCredits} credit{needCredits === 1 ? '' : 's'}</span> short.&nbsp;
+                  {balance.available_credits >= needCredits ? (
+                    <span className="text-emerald-300">You now have enough! Click continue →</span>
+                  ) : (
+                    <span style={{ color: 'rgba(245,236,215,0.7)' }}>
+                      Top up below, then we'll take you right back.
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>Top up below and we'll take you right back to your purchase.</>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate(returnTo)}
+              className="px-4 py-2 rounded-lg text-[10px] tracking-[0.3em] uppercase font-medium flex items-center gap-1.5"
+              style={{
+                background: balance.available_credits >= needCredits
+                  ? 'linear-gradient(135deg,#D4AF37,#B8941F)'
+                  : 'rgba(245,236,215,0.08)',
+                color: balance.available_credits >= needCredits ? '#1A0F08' : '#FFF8DC',
+                border: '1px solid rgba(212,175,55,0.4)',
+              }}
+              data-testid="wizard-return-btn"
+            >
+              {balance.available_credits >= needCredits ? <>Continue <ArrowRight className="w-3.5 h-3.5" /></> : <><ArrowLeft className="w-3.5 h-3.5" /> Back to wizard</>}
+            </button>
+          </motion.div>
+        )}
+
         {/* Heading */}
         <div className="mb-8 mt-4">
           <div className="text-[10px] tracking-[0.3em] uppercase mb-1" style={{ color: 'rgba(245,236,215,0.55)' }}>Your wallet</div>
@@ -171,7 +234,7 @@ export default function AccountCreditsPage() {
               </div>
             </div>
             <a
-              href="/user/buy-credits"
+              href={returnTo ? `/user/buy-credits?return=${encodeURIComponent(returnTo)}${needCredits ? `&need=${needCredits}` : ''}` : "/user/buy-credits"}
               data-testid="buy-credits-btn"
               className="px-5 py-2.5 rounded-lg text-[11px] tracking-[0.3em] uppercase font-medium"
               style={{ background: '#D4AF37', color: '#1A0F08' }}

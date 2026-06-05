@@ -1,0 +1,50 @@
+{
+  "summary": "Iteration_3 verified the polish round on the MAJA user-purchase flow: startup-seeded catalog, BuyAddonRequest Pydantic validation, public /pricing SEO page, round-trip ?return=&need= banner on AccountCreditsPage, and the nav-pricing link. Backend pytest suite now 11 passed / 1 skipped (added 3 new tests for 422 validation). All requested frontend data-testids render with correct counts and the Continue/Back-to-wizard branch flip works as specified.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "verified_features": [
+    "[BACKEND] GET /api/public/expiry-tiers returns exactly 4 tiers (1_month, 3_months, 6_months, 1_year). Inline seed removed; seeded at startup via seed_user_purchase_catalog().",
+    "[BACKEND] GET /api/public/addons returns exactly 10 addons (music, live_gallery, ai_story, rsvp, whatsapp, parking, gift_registry, digital_shagun, ai_face_match, save_the_date). Inline seed removed.",
+    "[BACKEND] POST /api/users/profiles/{id}/buy-addon with body {} returns HTTP 422 and FastAPI detail mentions 'addon_id' (Pydantic BuyAddonRequest enforces required field).",
+    "[BACKEND] POST buy-addon with {'foo':'bar'} (missing addon_id) returns 422 with 'addon_id' in detail.",
+    "[BACKEND] POST buy-addon with {'addon_id':'music','ignored_field':'abc','another':42} returns 200; unknown fields are ignored by Pydantic.",
+    "[BACKEND] All pre-existing buy-addon flows still pass: happy-path 200, idempotent re-buy (already_purchased=true, credits_charged=0), 404 unknown profile, 404 unknown addon, 401/403 no auth. 11 passed, 1 intentional skip (insufficient_credits — user already owns those tested addons).",
+    "[FRONTEND] /pricing renders without auth. document.title = 'Pricing — MAJA Wedding Invitations · Credits, Add-ons & Link Tiers'. meta[description] populated. link[rel=canonical] set. script#maja-pricing-jsonld present (length 2379, valid JSON-LD Product schema).",
+    "[FRONTEND] /pricing renders exactly 10 [data-testid^='pricing-addon-'] cards and 4 [data-testid^='pricing-tier-'] cards. Both pricing-addons-section and pricing-expiry-section visible.",
+    "[FRONTEND] pricing-cta-addons scrolls page to #addons (scrollY 0→793). pricing-cta-expiry scrolls to #expiry (scrollY 0→1068).",
+    "[FRONTEND] LandingPage navbar shows data-testid='nav-pricing' (label 'Pricing') only when no user is signed in. After login + reload the link disappears from DOM and navbar shows MY STUDIO / CREDITS / SIGN OUT instead.",
+    "[FRONTEND] /user/buy-credits?return=/user/buy-design/royal_mughal/Marriage/royal_mughal_design_1&need=100 renders wizard-return-banner with text 'You were just 100 credits short. Top up below, then we'll take you right back.' Button reads 'Back to wizard'. Clicking it navigates to /user/buy-design/royal_mughal/Marriage/royal_mughal_design_1 (verified).",
+    "[FRONTEND] When balance >= needCredits the wizard-return-btn flips to 'Continue' with gold gradient (linear-gradient(135deg, rgb(212,175,55), rgb(184,148,31))). Verified via need=0 (0>=0 boundary case) since live test-user balance is now 2 — code-path & branch CSS confirmed.",
+    "[FRONTEND] Open-redirect defence: /user/buy-credits?return=https%3A%2F%2Fevil.com — wizard-return-banner is NOT rendered (returnTo only honored when startsWith('/'))."
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_user_purchase_wizard.py",
+    "/app/test_reports/pytest/user_purchase_wizard.xml"
+  ],
+  "action_items": [
+    "(Optional) Re-seed/top-up testuser+maja@example.com credits in MongoDB ($inc credits +48) so the next testing agent can exercise the 'Continue' branch with a non-zero need value (e.g. need=5). Current balance has been depleted to 2 by the buy-addon regression suite. Boundary verified with need=0; full happy-path navigation also verified for the insufficient-balance branch (need=100)."
+  ],
+  "critical_code_review_comments": [
+    "user_features.py BuyAddonRequest currently allows extra fields (Pydantic v2 default). Verified extra fields don't break the endpoint (returns 200), matching the task spec. If stricter validation is desired later, add `model_config = ConfigDict(extra='forbid')`.",
+    "AccountCreditsPage.jsx still relies on localStorage 'user_token' for Bearer auth while /api/users/login only sets an HttpOnly cookie. The page works once a token is in localStorage, but during fresh-session Playwright tests the wallet APIs return 401 even though the session cookie is present. Consider unifying to a single auth scheme (either accept cookie auth for /api/wallet/* or store the token client-side).",
+    "test_credentials.md now mentions credits=2; main agent may want to top up the seed user back to 50 to keep next iterations green."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_user_purchase_wizard.py (added 3 new tests: empty body 422, missing addon_id 422, extra fields ignored)",
+    "/app/memory/test_credentials.md (noted balance depletion after regression runs)"
+  ],
+  "success_rate": {"backend": "100% (11/11 active pass, 1 intentional skip)", "frontend": "100% of requested data-testids and behaviours verified"},
+  "test_credentials": "testuser+maja@example.com / MajaTest@2026 (balance now 2). Login flow: POST /api/users/login (cookie based). For React app routes, also set localStorage.setItem('maja_user_session_active','1') before navigation so UserAuthContext re-probes /api/users/me.",
+  "seed_data_creation": "No new seed data. Used existing test user. A throwaway invitation profile is created inside TestBuyAddon (prefixed TEST_Groom_/TEST_Bride_) which gets various add-ons attached during the pytest run.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend pytest at /app/backend/tests/test_user_purchase_wizard.py is the regression entry-point — auto-detects between REACT_APP_BACKEND_URL and localhost:8001. All catalog data is now seeded at app startup via seed_user_purchase_catalog(db), so /api/public/expiry-tiers and /api/public/addons are read-only. New Pydantic BuyAddonRequest model returns 422 for invalid bodies. For frontend round-trip Continue branch testing, top up the test user's credits via mongo $inc on the user document before re-running (currently 2 credits). The wizard-return-btn's TRUE branch was verified through need=0 boundary; the FALSE branch + click-navigation was verified end-to-end with need=100.",
+  "rca of the issue": "No defects found. All 12 requested behaviours pass. Only one environmental quirk: the test user's credit balance is now 2 (depleted by repeated regression runs), which prevented exercising the 'Continue' label with a non-zero need value in a single session. Boundary case (need=0, balance=0) confirmed the >= comparator and the gold-gradient styling. Recommended one-time mongo top-up so future runs can exercise both branches with realistic need values."
+}

@@ -71,6 +71,7 @@ const UserProfile = lazy(() => import('./pages/UserProfile'));
 const UserDesignPicker = lazy(() => import('./pages/UserDesignPicker'));
 const UserInvitationForm = lazy(() => import('./pages/UserInvitationForm'));
 const PurchaseOptionsWizard = lazy(() => import('./pages/PurchaseOptionsWizard'));
+const PublicPricingPage = lazy(() => import('./pages/PublicPricingPage'));
 
 import './App.css';
 import { AnimationProvider } from './components/animations';
@@ -107,6 +108,7 @@ function App() {
               <Routes>
                 {/* Public */}
                 <Route path="/" element={<LandingPage />} />
+                <Route path="/pricing" element={<PublicPricingPage />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/themes" element={<ThemeShowroom />} />
                 <Route path="/themes/kerala_backwaters/gallery" element={<KeralaDesignGallery />} />

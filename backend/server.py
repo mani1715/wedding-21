@@ -13595,6 +13595,13 @@ app.include_router(photographer_referral_router)
 @app.on_event("startup")
 async def _seed_credit_system_defaults():
     try:
+        # Seed the user-facing purchase catalogue (expiry tiers + addons) ONCE
+        # at boot so the public endpoints never race on a cold first request.
+        from user_features import seed_user_purchase_catalog
+        await seed_user_purchase_catalog(db)
+    except Exception as e:
+        logger.warning("[credit-system] user-catalog seed failed: %s", e)
+    try:
         from enhanced_pricing_models import DurationOption, MixedThemePricing
         if await db.duration_options.count_documents({}) == 0:
             defaults = [

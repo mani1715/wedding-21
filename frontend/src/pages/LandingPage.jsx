@@ -149,6 +149,14 @@ const Nav = ({ onLogin, user, onOpenAuth, onLogout, onBuyCredits, onUserDashboar
           Sign in
         </button>
       )}
+      {!user && (
+        <a href="/pricing"
+          className="lux-btn lux-btn-ghost !px-3 !py-2 md:!px-5 md:!py-2.5 !text-[10px] md:!text-xs whitespace-nowrap hidden sm:inline-flex"
+          data-testid="nav-pricing"
+        >
+          Pricing
+        </a>
+      )}
       {/* Photographer Studio entry — only when no user is signed in,
           so the normal user header stays clean (Credits + Sign out + My Profile). */}
       {!user && (
