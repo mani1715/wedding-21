@@ -5,7 +5,6 @@ import { AuthProvider } from './context/AuthContext';
 import { UserAuthProvider } from './context/UserAuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingFallback from './components/LoadingFallback';
-import GlobalScrollDebugBanner from './components/GlobalScrollDebugBanner';
 
 // PHASE 2: CODE SPLITTING - Lazy load all heavy pages for better initial load
 const LandingPage = lazy(() => import('./pages/LandingPage'));
@@ -40,10 +39,6 @@ const SuperAdminGiftCodes = lazy(() => import('./pages/SuperAdminGiftCodes'));
 const SuperAdminExpiryTiers = lazy(() => import('./pages/SuperAdminExpiryTiers'));
 const PurchaseFlowPage = lazy(() => import('./pages/PurchaseFlowPage'));
 const AccountCreditsPage = lazy(() => import('./pages/AccountCreditsPage'));
-const MobileScrollDiagnostic = lazy(() => import('./pages/MobileScrollDiagnostic'));
-const TestPlainScroll = lazy(() => import('./pages/TestPlainScroll'));
-const TestLayoutScroll = lazy(() => import('./pages/TestLayoutScroll'));
-const TestInviteMinimal = lazy(() => import('./pages/TestInviteMinimal'));
 
 // Sub-pages - Lazy loaded
 const RSVPManagement = lazy(() => import('./pages/RSVPManagement'));
@@ -107,7 +102,6 @@ function App() {
               <BrowserRouter>
               <ScrollToTop />
               <RouteCleanup />
-              <GlobalScrollDebugBanner />
               <Suspense fallback={<LoadingFallback variant="page" />}>
               <Routes>
                 {/* Public */}
@@ -190,10 +184,6 @@ function App() {
                 <Route path="/account/credits" element={<AccountCreditsPage />} />
                 <Route path="/credits" element={<AccountCreditsPage />} />
                 <Route path="/purchase" element={<PurchaseFlowPage />} />
-                <Route path="/diag/scroll" element={<MobileScrollDiagnostic />} />
-                <Route path="/test/plain-scroll" element={<TestPlainScroll />} />
-                <Route path="/test/layout-scroll" element={<TestLayoutScroll />} />
-                <Route path="/test/invite-minimal" element={<TestInviteMinimal />} />
 
                 {/* Normal-user (wedding-couple) flows */}
                 <Route path="/user/dashboard" element={<UserDashboard />} />
