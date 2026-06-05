@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="6" time="1.059" timestamp="2026-06-05T06:00:22.837192+00:00" hostname="agent-env-65656925-da20-4f07-b79b-2579b1f929b1"><testcase classname="backend.tests.test_photographer_panel_v2.TestMusicPresets" name="test_music_presets_returns_60" time="0.172" /><testcase classname="backend.tests.test_photographer_panel_v2.TestExpiryTiers" name="test_get_expiry_tiers_returns_4" time="0.316" /><testcase classname="backend.tests.test_photographer_panel_v2.TestExpiryTiers" name="test_expiry_tiers_requires_auth" time="0.043" /><testcase classname="backend.tests.test_photographer_panel_v2.TestAdminUploadImage" name="test_upload_png_success" time="0.145" /><testcase classname="backend.tests.test_photographer_panel_v2.TestAdminUploadImage" name="test_upload_requires_auth" time="0.047" /><testcase classname="backend.tests.test_photographer_panel_v2.TestAIStory" name="test_ai_story_returns_non_empty" time="0.256"><failure message="AssertionError: ai story failed 503: {&quot;detail&quot;:&quot;The AI muse is resting briefly. Please try again in a moment, or top up your Universal Key balance in Profile → Universal Key.&quot;}&#10;assert 503 == 200&#10; +  where 503 = &lt;Response [503]&gt;.status_code">self = &lt;test_photographer_panel_v2.TestAIStory object at 0xfe2167ed7a10&gt;
+api_client = &lt;requests.sessions.Session object at 0xfe2168553710&gt;
+auth_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4ZTVlNDk4NS05ZTg5LTQyODUtOWRkYi04ODZhZjdlNjM...-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36'}
+
+    def test_ai_story_returns_non_empty(self, api_client, auth_headers):
+        payload = {
+            "bride": "Aisha",
+            "groom": "Rohan",
+            "theme": "cinematic_royal",
+            "tone": "cinematic_royal",
+            "kind": "invitation",
+            "language": "English",
+            "notes": "Met at a Mumbai coffee shop during a monsoon evening.",
+        }
+        r = api_client.post(
+            f"{BASE_URL}/api/admin/ai/story",
+            json=payload,
+            headers={**auth_headers, "Content-Type": "application/json"},
+            timeout=60,
+        )
+&gt;       assert r.status_code == 200, f"ai story failed {r.status_code}: {r.text[:400]}"
+E       AssertionError: ai story failed 503: {"detail":"The AI muse is resting briefly. Please try again in a moment, or top up your Universal Key balance in Profile → Universal Key."}
+E       assert 503 == 200
+E        +  where 503 = &lt;Response [503]&gt;.status_code
+
+backend/tests/test_photographer_panel_v2.py:145: AssertionError</failure></testcase></testsuite></testsuites>

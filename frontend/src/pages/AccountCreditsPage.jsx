@@ -1,0 +1,391 @@
+/**
+ * AccountCreditsPage — self-service credit balance + redeem-code + ledger.
+ *
+ * Hits the new spec-compliant endpoints:
+ *   GET  /api/account/credits       → { total, used, available }
+ *   GET  /api/account/ledger        → recent transactions
+ *   POST /api/account/redeem-code   → grants credits, returns new balance
+ *
+ * Works for both photographer (`admin` role) and normal user (`user`) since
+ * `get_current_admin` resolves either to a credit account.
+ */
+import React, { useCallback, useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Sparkles, Gift, CheckCircle, AlertCircle, ArrowDownLeft, ArrowUpRight, RotateCcw, Wallet, Copy, Users, RefreshCw } from 'lucide-react';
+import BackButton from '@/components/BackButton';
+
+const API = process.env.REACT_APP_BACKEND_URL || '';
+
+const ACTION_META = {
+  add:    { label: 'Added',    icon: ArrowDownLeft, tone: 'text-emerald-400 bg-emerald-500/10' },
+  refund: { label: 'Refund',   icon: RotateCcw,     tone: 'text-emerald-400 bg-emerald-500/10' },
+  used:   { label: 'Used',     icon: ArrowUpRight,  tone: 'text-rose-400 bg-rose-500/10' },
+  deduct: { label: 'Deducted', icon: ArrowUpRight,  tone: 'text-rose-400 bg-rose-500/10' },
+  adjust: { label: 'Adjusted', icon: Sparkles,      tone: 'text-amber-400 bg-amber-500/10' },
+};
+
+const fmt = (n) => Number(n || 0).toLocaleString('en-IN');
+
+export default function AccountCreditsPage() {
+  const [balance, setBalance] = useState({ total_credits: 0, used_credits: 0, available_credits: 0 });
+  const [ledger, setLedger]   = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [code, setCode]       = useState('');
+  const [redeeming, setRedeeming] = useState(false);
+  const [redeemMsg, setRedeemMsg] = useState(null);   // { type: 'success'|'error', text }
+  // Referral-code state
+  const [referral, setReferral]   = useState(null);
+  const [referralBusy, setReferralBusy] = useState(false);
+  const [copied, setCopied]       = useState(false);
+  const [refCode, setRefCode]     = useState('');
+  const [refMsg, setRefMsg]       = useState(null);
+
+  const token = (typeof window !== 'undefined' && window.localStorage)
+    ? localStorage.getItem('admin_token') || localStorage.getItem('user_token')
+    : null;
+
+  const headers = token
+    ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+    : { 'Content-Type': 'application/json' };
+
+  const refresh = useCallback(async () => {
+    try {
+      const [b, l, r] = await Promise.all([
+        fetch(`${API}/api/account/credits`, { headers }).then(r => r.json()),
+        fetch(`${API}/api/account/ledger?limit=50`, { headers }).then(r => r.json()),
+        fetch(`${API}/api/account/referral-code`, { headers }).then(r => r.json()).catch(() => null),
+      ]);
+      if (b && !b.detail) setBalance(b);
+      if (l && Array.isArray(l.entries)) setLedger(l.entries);
+      if (r && r.code) setReferral(r);
+    } catch (_) { /* swallow */ }
+    setLoading(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => { refresh(); }, [refresh]);
+
+  const onRedeem = async (e) => {
+    e?.preventDefault();
+    const trimmed = code.trim();
+    if (!trimmed) return;
+    setRedeeming(true);
+    setRedeemMsg(null);
+    try {
+      const res = await fetch(`${API}/api/account/redeem-code`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ code: trimmed }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setRedeemMsg({ type: 'error', text: data?.detail || 'Could not redeem' });
+      } else {
+        setRedeemMsg({ type: 'success', text: `+${data.credits_added} credits added!` });
+        setCode('');
+        if (data.balance) setBalance(data.balance);
+        // Pull fresh ledger so the new row shows up
+        refresh();
+      }
+    } catch (_) {
+      setRedeemMsg({ type: 'error', text: 'Network error' });
+    }
+    setRedeeming(false);
+  };
+
+  // ── Referral code handlers ───────────────────────────────────────────
+  const onCopyReferral = () => {
+    if (!referral?.code) return;
+    navigator.clipboard?.writeText(referral.code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  const onRegenerateReferral = async () => {
+    setReferralBusy(true);
+    try {
+      const r = await fetch(`${API}/api/account/referral-code/regenerate`, {
+        method: 'POST', headers,
+      });
+      const data = await r.json();
+      if (data?.code) setReferral(data);
+    } catch (_) { /* swallow */ }
+    setReferralBusy(false);
+  };
+
+  const onRedeemReferral = async (e) => {
+    e?.preventDefault();
+    const trimmed = refCode.trim();
+    if (!trimmed) return;
+    setReferralBusy(true);
+    setRefMsg(null);
+    try {
+      const r = await fetch(`${API}/api/account/redeem-referral`, {
+        method: 'POST', headers,
+        body: JSON.stringify({ code: trimmed }),
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        setRefMsg({ type: 'error', text: data?.detail || 'Could not redeem' });
+      } else {
+        setRefMsg({ type: 'success', text: `+${data.credits_added} credits from referral!` });
+        setRefCode('');
+        if (data.balance) setBalance(data.balance);
+        refresh();
+      }
+    } catch (_) {
+      setRefMsg({ type: 'error', text: 'Network error' });
+    }
+    setReferralBusy(false);
+  };
+
+  return (
+    <div className="min-h-screen px-5 sm:px-10 py-10" style={{ background: '#0a0a0a', color: '#F5ECD7' }} data-testid="account-credits-page">
+      <div className="max-w-4xl mx-auto">
+        <BackButton label="Back" />
+        {/* Heading */}
+        <div className="mb-8 mt-4">
+          <div className="text-[10px] tracking-[0.3em] uppercase mb-1" style={{ color: 'rgba(245,236,215,0.55)' }}>Your wallet</div>
+          <h1 className="font-display text-3xl sm:text-4xl" style={{ color: '#FFF8DC' }}>Credits</h1>
+        </div>
+
+        {/* Balance hero */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+          className="rounded-2xl p-7 mb-8"
+          style={{
+            background: 'linear-gradient(135deg, rgba(212,175,55,0.18) 0%, rgba(140,30,30,0.18) 100%)',
+            border: '1px solid rgba(212,175,55,0.35)',
+          }}
+        >
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <div className="flex items-center gap-2 text-[10px] tracking-[0.3em] uppercase mb-2" style={{ color: '#D4AF37' }}>
+                <Wallet className="w-3.5 h-3.5" /> Available balance
+              </div>
+              <div className="font-display text-5xl sm:text-6xl tracking-tight" style={{ color: '#FFF8DC' }} data-testid="balance-available">
+                {fmt(balance.available_credits)}
+              </div>
+              <div className="text-sm mt-1" style={{ color: 'rgba(245,236,215,0.65)' }}>
+                Total {fmt(balance.total_credits)} · Used {fmt(balance.used_credits)}
+              </div>
+            </div>
+            <a
+              href="/user/buy-credits"
+              data-testid="buy-credits-btn"
+              className="px-5 py-2.5 rounded-lg text-[11px] tracking-[0.3em] uppercase font-medium"
+              style={{ background: '#D4AF37', color: '#1A0F08' }}
+            >
+              Buy credits
+            </a>
+          </div>
+        </motion.div>
+
+        {/* Redeem code */}
+        <motion.form
+          onSubmit={onRedeem}
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.05 }}
+          className="rounded-2xl p-6 mb-8"
+          style={{ background: 'rgba(245,236,215,0.04)', border: '1px solid rgba(245,236,215,0.12)' }}
+          data-testid="redeem-form"
+        >
+          <div className="flex items-center gap-2 text-[10px] tracking-[0.3em] uppercase mb-3" style={{ color: '#D4AF37' }}>
+            <Gift className="w-3.5 h-3.5" /> Have a gift code?
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              placeholder="e.g. LOVE26"
+              maxLength={16}
+              data-testid="redeem-code-input"
+              className="flex-1 px-4 py-3 rounded-lg text-lg tracking-[0.25em] uppercase outline-none"
+              style={{
+                background: 'rgba(10,10,10,0.6)',
+                color: '#FFF8DC',
+                border: '1px solid rgba(212,175,55,0.4)',
+                fontFamily: '"JetBrains Mono", monospace',
+              }}
+            />
+            <button
+              type="submit"
+              disabled={!code.trim() || redeeming}
+              data-testid="redeem-submit"
+              className="px-6 py-3 rounded-lg text-[11px] tracking-[0.3em] uppercase font-medium disabled:opacity-50"
+              style={{ background: '#FFF8DC', color: '#1A0F08' }}
+            >
+              {redeeming ? 'Redeeming…' : 'Redeem'}
+            </button>
+          </div>
+          {redeemMsg && (
+            <div
+              className={`mt-3 flex items-center gap-2 text-sm ${redeemMsg.type === 'success' ? 'text-emerald-300' : 'text-rose-300'}`}
+              data-testid={`redeem-${redeemMsg.type}`}
+            >
+              {redeemMsg.type === 'success'
+                ? <CheckCircle className="w-4 h-4" />
+                : <AlertCircle  className="w-4 h-4" />}
+              <span>{redeemMsg.text}</span>
+            </div>
+          )}
+        </motion.form>
+
+        {/* My referral code */}
+        {referral?.code && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.08 }}
+            className="rounded-2xl p-6 mb-4"
+            style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.25)' }}
+            data-testid="my-referral-panel"
+          >
+            <div className="flex items-center gap-2 text-[10px] tracking-[0.3em] uppercase mb-3" style={{ color: '#D4AF37' }}>
+              <Users className="w-3.5 h-3.5" /> Your referral code
+            </div>
+            <div className="flex items-center gap-3 flex-wrap">
+              <code
+                className="px-4 py-3 rounded-lg text-xl font-mono tracking-[0.2em]"
+                style={{ background: 'rgba(10,10,10,0.6)', color: '#FFF8DC', border: '1px solid rgba(212,175,55,0.35)' }}
+                data-testid="my-referral-code"
+              >
+                {referral.code}
+              </code>
+              <button
+                onClick={onCopyReferral}
+                data-testid="copy-referral-code"
+                className="px-3 py-2 rounded-lg text-[11px] tracking-[0.3em] uppercase font-medium flex items-center gap-1.5"
+                style={{ background: 'rgba(212,175,55,0.18)', color: '#D4AF37' }}
+              >
+                {copied ? <CheckCircle className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? 'Copied' : 'Copy'}
+              </button>
+              <button
+                onClick={onRegenerateReferral}
+                disabled={referralBusy}
+                data-testid="regenerate-referral"
+                className="px-3 py-2 rounded-lg text-[11px] tracking-[0.3em] uppercase flex items-center gap-1.5"
+                style={{ background: 'rgba(245,236,215,0.06)', color: 'rgba(245,236,215,0.7)' }}
+              >
+                <RefreshCw className="w-3.5 h-3.5" /> Regenerate
+              </button>
+            </div>
+            <div className="mt-3 text-[11px] grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Stat label="Redeemers earn" value={`${referral.redeemer_reward} cr`} />
+              <Stat label="You earn per redeem" value={`${referral.owner_reward} cr`} />
+              <Stat label="Total redemptions" value={`${referral.redeemed_count || 0}`} />
+            </div>
+          </motion.div>
+        )}
+
+        {/* Redeem someone else's referral code */}
+        <motion.form
+          onSubmit={onRedeemReferral}
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
+          className="rounded-2xl p-6 mb-8"
+          style={{ background: 'rgba(245,236,215,0.04)', border: '1px solid rgba(245,236,215,0.12)' }}
+          data-testid="redeem-referral-form"
+        >
+          <div className="flex items-center gap-2 text-[10px] tracking-[0.3em] uppercase mb-3" style={{ color: '#D4AF37' }}>
+            <Users className="w-3.5 h-3.5" /> Got a friend's referral code?
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              value={refCode}
+              onChange={(e) => setRefCode(e.target.value.toUpperCase())}
+              placeholder="e.g. MAJA-ABC123"
+              maxLength={20}
+              data-testid="redeem-referral-input"
+              className="flex-1 px-4 py-3 rounded-lg text-lg tracking-[0.2em] uppercase outline-none"
+              style={{
+                background: 'rgba(10,10,10,0.6)',
+                color: '#FFF8DC',
+                border: '1px solid rgba(212,175,55,0.4)',
+                fontFamily: '"JetBrains Mono", monospace',
+              }}
+            />
+            <button
+              type="submit"
+              disabled={!refCode.trim() || referralBusy}
+              data-testid="redeem-referral-submit"
+              className="px-6 py-3 rounded-lg text-[11px] tracking-[0.3em] uppercase font-medium disabled:opacity-50"
+              style={{ background: '#FFF8DC', color: '#1A0F08' }}
+            >
+              {referralBusy ? 'Redeeming…' : 'Redeem'}
+            </button>
+          </div>
+          {refMsg && (
+            <div
+              className={`mt-3 flex items-center gap-2 text-sm ${refMsg.type === 'success' ? 'text-emerald-300' : 'text-rose-300'}`}
+              data-testid={`referral-${refMsg.type}`}
+            >
+              {refMsg.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+              <span>{refMsg.text}</span>
+            </div>
+          )}
+        </motion.form>
+
+        {/* Ledger */}
+        <div className="mb-4 flex items-baseline justify-between">
+          <h2 className="font-display text-xl" style={{ color: '#FFF8DC' }}>Recent activity</h2>
+          {ledger.length > 0 && (
+            <span className="text-[10px] tracking-[0.3em] uppercase" style={{ color: 'rgba(245,236,215,0.55)' }}>
+              {ledger.length} entries
+            </span>
+          )}
+        </div>
+
+        <div className="rounded-2xl overflow-hidden"
+             style={{ background: 'rgba(245,236,215,0.04)', border: '1px solid rgba(245,236,215,0.12)' }}>
+          {loading && (
+            <div className="px-5 py-10 text-center text-sm" style={{ color: 'rgba(245,236,215,0.55)' }}>
+              Loading…
+            </div>
+          )}
+          {!loading && ledger.length === 0 && (
+            <div className="px-5 py-10 text-center text-sm" style={{ color: 'rgba(245,236,215,0.55)' }} data-testid="ledger-empty">
+              No transactions yet. Redeem a code or buy a credit pack to get started.
+            </div>
+          )}
+          {!loading && ledger.map((e) => {
+            const meta = ACTION_META[e.action_type] || ACTION_META.adjust;
+            const Icon = meta.icon;
+            const sign = (e.amount || 0) >= 0 ? '+' : '';
+            return (
+              <div
+                key={e.credit_id}
+                className="flex items-center gap-4 px-5 py-4 border-b last:border-b-0"
+                style={{ borderColor: 'rgba(245,236,215,0.08)' }}
+                data-testid={`ledger-row-${e.credit_id}`}
+              >
+                <div className={`w-9 h-9 rounded-full grid place-items-center flex-shrink-0 ${meta.tone}`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium truncate" style={{ color: '#FFF8DC' }}>
+                    {e.reason || meta.label}
+                  </div>
+                  <div className="text-[11px] mt-0.5" style={{ color: 'rgba(245,236,215,0.55)' }}>
+                    {e.created_at?.slice(0, 19).replace('T', ' ')} · {meta.label}
+                  </div>
+                </div>
+                <div className={`text-base font-semibold tracking-tight ${
+                  (e.amount || 0) >= 0 ? 'text-emerald-300' : 'text-rose-300'
+                }`}>
+                  {sign}{fmt(e.amount)}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const Stat = ({ label, value }) => (
+  <div className="px-3 py-2 rounded" style={{ background: 'rgba(10,10,10,0.4)', border: '1px solid rgba(245,236,215,0.08)' }}>
+    <div className="text-[9px] tracking-[0.2em] uppercase" style={{ color: 'rgba(245,236,215,0.55)' }}>{label}</div>
+    <div className="text-sm mt-0.5" style={{ color: '#FFF8DC' }}>{value}</div>
+  </div>
+);
