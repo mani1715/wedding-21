@@ -101,3 +101,137 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: |
+  MAJA wedding-invitation SaaS — Normal-user (couple) flow polish:
+  1. "Buy this theme" CTA on every homepage theme card → /user/buy-theme/:themeId
+  2. EventDesignPicker — split into Preview + Buy this design + credits-cost badge → /user/buy-design/:themeId/:event/:designId
+  3. NEW PurchaseOptionsWizard.jsx — add-on picker + expiry-tier picker + running credit total + checkout
+  4. UserProfile — "Add features" button + AddFeaturesModal calling POST /api/users/profiles/{id}/buy-addon
+  5. UserInvitationForm — parse ?addons=&expiry= from URL, show ✓ Purchased — included, auto-buy each addon after profile create
+  6. UserDashboard — Browse Themes CTA → /#themes
+  7. LuxuryPublicInvitation — translations switcher + parking section
+  8. Hero copy polish on LandingPage
+
+backend:
+  - task: "GET /api/public/expiry-tiers (no auth)"
+    implemented: true
+    working: true
+    file: "/app/backend/user_features.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Returns seeded {1_month, 3_months, 6_months, 1_year}. Verified via curl on localhost."
+
+  - task: "GET /api/public/addons (no auth)"
+    implemented: true
+    working: true
+    file: "/app/backend/user_features.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Seeds 10 default addons on first call. Verified."
+
+  - task: "POST /api/users/profiles/{id}/buy-addon"
+    implemented: true
+    working: true
+    file: "/app/backend/user_features.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Deducts credits, pushes to profile.add_ons, ledger entry. Idempotent. 402 on shortage. Verified end-to-end via curl."
+
+frontend:
+  - task: "LandingPage — Buy this theme CTA on theme cards"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/LandingPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+
+  - task: "EventDesignPicker — Preview + Buy this design + credit badge"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/EventDesignPicker.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+
+  - task: "PurchaseOptionsWizard — new wizard page"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/PurchaseOptionsWizard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+
+  - task: "UserInvitationForm — apply ?addons= and ?expiry="
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/UserInvitationForm.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+
+  - task: "UserProfile — Add features button + AddFeaturesModal"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/UserProfile.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+
+  - task: "UserDashboard — Browse Themes CTA"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/UserDashboard.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+
+  - task: "LuxuryPublicInvitation — translations switcher + parking block"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/LuxuryPublicInvitation.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+
+metadata:
+  created_by: "main_agent"
+  version: "1.1"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "PurchaseOptionsWizard — new wizard page"
+    - "EventDesignPicker — Preview + Buy this design + credit badge"
+    - "LandingPage — Buy this theme CTA on theme cards"
+    - "UserProfile — Add features button + AddFeaturesModal"
+    - "UserInvitationForm — apply ?addons= and ?expiry="
+    - "POST /api/users/profiles/{id}/buy-addon"
+    - "GET /api/public/expiry-tiers (no auth)"
+    - "GET /api/public/addons (no auth)"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: |
+      Implemented the full normal-user purchase flow end-to-end.
+      Test creds (in /app/memory/test_credentials.md):
+        Email: testuser+maja@example.com
+        Password: MajaTest@2026
+        Credits: 50

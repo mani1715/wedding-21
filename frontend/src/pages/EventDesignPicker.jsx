@@ -7,10 +7,11 @@
  * pair rendered via `UniversalDesignRenderer` (image + theme wash +
  * animated overlays + text). Clicking → /themes/:themeId/events/:event/design/:idx.
  */
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Eye } from 'lucide-react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Eye, Coins, ShoppingBag } from 'lucide-react';
+import axios from 'axios';
 import UniversalDesignRenderer from '@/themes/UniversalDesignRenderer';
 import { ALL_DESIGNS, useThemeDesigns } from '@/themes/allDesigns';
 import { KERALA_COLORS } from '@/themes/kerala_backwaters/kerala.colors';
@@ -19,6 +20,8 @@ import { normaliseEvent, resolveDesign } from '@/themes/themeDesignResolver';
 import { getThemeSampleData } from '@/themes/sampleData';
 import { AnimationProvider } from '@/components/animations';
 import ThemeAnimatedBackground from '@/components/ThemeAnimatedBackground';
+
+const API_URL = process.env.REACT_APP_BACKEND_URL || '';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 32, filter: 'blur(10px)' },
@@ -33,10 +36,21 @@ const SAMPLE_PHOTO = 'https://images.unsplash.com/photo-1519741497674-6114818635
 const EventDesignPicker = () => {
   const { themeId, event: rawEvent } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const themeMeta = useMemo(() => getThemeById(themeId), [themeId]);
   const event = useMemo(() => normaliseEvent(rawEvent), [rawEvent]);
   // PHASE 8: lazy-load the selected theme's design config.
   const themeDesigns = useThemeDesigns(themeId);
+
+  // Per-design credit cost — fetched once and used to render a "Credits cost: N"
+  // badge on every design card.  Falls back to 1 when pricing data isn't
+  // available (matches user_create_profile defaulting to 1 credit).
+  const [pricing, setPricing] = useState({});
+  useEffect(() => {
+    axios.get(`${API_URL}/api/public/design-pricing`)
+      .then((r) => setPricing(r.data?.pricing || {}))
+      .catch(() => setPricing({}));
+  }, []);
 
   // Theme-specific dummy couple/date so each theme's preview shows
   // culturally resonant placeholders.
@@ -138,30 +152,53 @@ const EventDesignPicker = () => {
 
         <div className="px-6 md:px-16 pb-24 max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-            {variants.map((v, i) => (
-              <motion.div key={v.design.id} variants={fadeUp} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} data-testid={`design-variant-${v.index}`}>
-                <button
-                  type="button"
-                  onClick={() => navigate(`/themes/${themeId}/events/${event}/design/${v.index}`)}
-                  className="w-full text-left transition-transform hover:-translate-y-1"
-                  data-testid={`design-pick-${v.index}`}
-                >
-                  <UniversalDesignRenderer
-                    design={v.design}
-                    theme={v.theme}
-                    bride={SAMPLE.bride}
-                    groom={SAMPLE.groom}
-                    date={SAMPLE.date}
-                    venue={SAMPLE.venue}
-                    photo={SAMPLE.photo}
-                  />
+            {variants.map((v, i) => {
+              const designId = v.design.id;
+              const cost = pricing?.[designId]?.credits ?? 1;
+              // Carry forward any addons/expiry that came from the wizard
+              const qs = searchParams.toString();
+              const previewHref = `/themes/${themeId}/events/${event}/design/${v.index}`;
+              const buyHref = `/user/buy-design/${themeId}/${event}/${designId}${qs ? `?${qs}` : ''}`;
+              return (
+              <motion.div key={designId} variants={fadeUp} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} data-testid={`design-variant-${v.index}`}>
+                <div className="w-full text-left transition-transform hover:-translate-y-1 relative">
+                  {/* Credit cost badge — top-right of the card */}
+                  <div
+                    className="absolute top-3 right-3 z-10 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] tracking-[0.18em] uppercase"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(212,175,55,0.95), rgba(180,140,40,0.9))',
+                      color: '#16110C',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                      border: '1px solid rgba(255,248,220,0.35)',
+                      fontWeight: 700,
+                    }}
+                    data-testid={`design-credit-badge-${v.index}`}
+                  >
+                    <Coins className="w-3 h-3" strokeWidth={2.4} />
+                    {cost} credit{cost === 1 ? '' : 's'}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate(previewHref)}
+                    className="block w-full"
+                    data-testid={`design-pick-${v.index}`}
+                  >
+                    <UniversalDesignRenderer
+                      design={v.design}
+                      theme={v.theme}
+                      bride={SAMPLE.bride}
+                      groom={SAMPLE.groom}
+                      date={SAMPLE.date}
+                      venue={SAMPLE.venue}
+                      photo={SAMPLE.photo}
+                    />
+                  </button>
+
                   <div className="mt-4 px-1">
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-[10px] tracking-[0.3em] uppercase" style={{ color: accent }}>
                         Design {v.index + 1} of 3
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-[10px] tracking-[0.3em] uppercase opacity-85" style={{ color: accent }}>
-                        <Eye className="w-3.5 h-3.5" /> Preview
                       </span>
                     </div>
                     <div className="text-[16px] leading-snug" style={{ color: text, fontFamily: headingFont }}>
@@ -170,10 +207,37 @@ const EventDesignPicker = () => {
                     <div className="text-[12px] mt-1 leading-relaxed opacity-75" style={{ color: text }}>
                       {v.design.description}
                     </div>
+
+                    {/* Action buttons — Preview (ghost) + Buy this design (filled) */}
+                    <div className="mt-4 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => navigate(previewHref)}
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full text-[11px] tracking-[0.18em] uppercase transition-all hover:opacity-80"
+                        style={{ background: 'transparent', border: `1px solid ${accent}`, color: text }}
+                        data-testid={`design-preview-btn-${v.index}`}
+                      >
+                        <Eye className="w-3.5 h-3.5" /> Preview
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => navigate(buyHref)}
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full text-[11px] tracking-[0.18em] uppercase transition-all hover:scale-[1.02]"
+                        style={{
+                          background: 'linear-gradient(135deg,#D4AF37,#B8941F)',
+                          color: '#16110C',
+                          fontWeight: 600,
+                        }}
+                        data-testid={`design-buy-btn-${v.index}`}
+                      >
+                        <ShoppingBag className="w-3.5 h-3.5" /> Buy this design
+                      </button>
+                    </div>
                   </div>
-                </button>
+                </div>
               </motion.div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

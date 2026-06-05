@@ -48,6 +48,7 @@ const LuxuryPublicInvitation = () => {
   const [galleryInfo, setGalleryInfo] = useState(null);
   const [prefetch, setPrefetch] = useState(null); // batched side-data
   const [findOpen, setFindOpen] = useState(false);
+  const [selectedLang, setSelectedLang] = useState('');
   const footerRef = useRef(null);
 
   useEffect(() => {
@@ -231,11 +232,27 @@ const LuxuryPublicInvitation = () => {
   const planType = data.plan_type || 'FREE';
   const watermark = planType === 'FREE';
   const musicUrl = data.background_music?.file_url || data.background_music?.url || '';
-  const venueText = data.venue || '';
-  const venueAddress = data.city || '';
-  const story = data.love_story || data.story || '';
-  const brideAbout = data.bride_about || '';
-  const groomAbout = data.groom_about || '';
+
+  // ── Multi-language: pull translations + render language picker.
+  // `data.translations` is { language_code: { field: translatedText } }.
+  // We default to the data's primary language (or the first available
+  // translation) and let the user toggle.  Each translated text falls
+  // back to the original (English) value when missing.
+  const availableLangs = Object.keys(data.translations || {});
+  const baseLang = (data.language && data.language[0]) || 'english';
+  const allLangs = Array.from(new Set([baseLang, ...availableLangs]));
+  const activeLang = selectedLang || baseLang;
+  const tr = (fieldName, fallback) => {
+    if (activeLang === baseLang) return fallback;
+    const t = data.translations?.[activeLang]?.[fieldName];
+    return t || fallback;
+  };
+
+  const venueText = tr('venue', data.venue || '');
+  const venueAddress = tr('city', data.city || '');
+  const story = tr('love_story', data.love_story || data.story || '');
+  const brideAbout = tr('bride_about', data.bride_about || '');
+  const groomAbout = tr('groom_about', data.groom_about || '');
   const guestRooms = Array.isArray(data.guest_rooms) ? data.guest_rooms : [];
   const preWeddingLinks = Array.isArray(data.pre_wedding_links) ? data.pre_wedding_links : [];
   const resolveUrl = (u) => (u && !u.startsWith('http') && !u.startsWith('data:') ? `${API_URL}${u}` : (u || ''));
@@ -349,6 +366,41 @@ const LuxuryPublicInvitation = () => {
         {guestToken && openingDone && <PersonalizedWelcome slug={slug} token={guestToken} />}
 
         {watermark && <WatermarkOverlay />}
+
+        {/* Language switcher — shown only when the couple uploaded multi-language
+            translations to `profile.translations`.  We always include the base
+            language so the user can switch back to the original. */}
+        {allLangs.length > 1 && (
+          <div
+            className="fixed z-40 flex items-center gap-1 px-2 py-1.5 rounded-full"
+            style={{
+              top: 12, right: 12,
+              background: 'rgba(14,10,6,0.78)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(212,175,55,0.35)',
+            }}
+            data-testid="lang-switcher"
+          >
+            {allLangs.map((lng) => {
+              const active = activeLang === lng;
+              return (
+                <button
+                  key={lng}
+                  type="button"
+                  onClick={() => setSelectedLang(lng)}
+                  className="text-[10px] tracking-[0.18em] uppercase px-2 py-1 rounded-full"
+                  style={{
+                    background: active ? 'linear-gradient(135deg,#D4AF37,#B8941F)' : 'transparent',
+                    color: active ? '#16110C' : 'rgba(255,248,220,0.7)',
+                  }}
+                  data-testid={`lang-pick-${lng}`}
+                >
+                  {lng}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Hero */}
         <HeroCover bride={bride} groom={groom} date={weddingDate} theme={theme} />
@@ -500,6 +552,42 @@ const LuxuryPublicInvitation = () => {
             <a target="_blank" rel="noreferrer" href={`https://www.google.com/maps/search/${encodeURIComponent([venueText, venueAddress].filter(Boolean).join(', '))}`} className="lux-btn lux-btn-ghost">
               Open in Maps <MapPin className="w-3.5 h-3.5" />
             </a>
+          </ScrollSection>
+        )}
+
+        {/* Parking — rendered only when the couple has enabled it.
+            `profile.parking.enabled === true` toggles this section.  We
+            show the parking note + an optional Maps deep-link. */}
+        {data.parking?.enabled && (
+          <ScrollSection className="px-6 md:px-16 py-20 max-w-4xl mx-auto" testid="section-parking">
+            <span className="lux-eyebrow block mb-5">◆ Parking &amp; Travel</span>
+            <h2 className="font-display text-[2rem] md:text-[2.6rem] leading-[1.05] mb-6" style={{ color: '#FFF8DC' }}>
+              How to <span className="text-gold italic font-script">park.</span>
+            </h2>
+            {data.parking?.note && (
+              <p className="text-[1rem] leading-relaxed mb-3" style={{ color: 'rgba(255,248,220,0.8)' }} data-testid="parking-note">
+                {tr('parking_note', data.parking.note)}
+              </p>
+            )}
+            {data.parking?.address && (
+              <p className="text-sm mb-4" style={{ color: 'rgba(255,248,220,0.6)' }} data-testid="parking-address">
+                {data.parking.address}
+              </p>
+            )}
+            {(data.parking?.map_link || data.parking?.address || data.parking?.note) && (
+              <a
+                target="_blank"
+                rel="noreferrer"
+                href={
+                  data.parking?.map_link
+                    || `https://www.google.com/maps/search/${encodeURIComponent([data.parking?.address || '', venueText].filter(Boolean).join(', '))}`
+                }
+                className="lux-btn lux-btn-ghost"
+                data-testid="parking-map-link"
+              >
+                Open parking map <MapPin className="w-3.5 h-3.5" />
+              </a>
+            )}
           </ScrollSection>
         )}
 

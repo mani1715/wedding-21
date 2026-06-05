@@ -70,6 +70,7 @@ const UserDashboard = lazy(() => import('./pages/UserDashboard'));
 const UserProfile = lazy(() => import('./pages/UserProfile'));
 const UserDesignPicker = lazy(() => import('./pages/UserDesignPicker'));
 const UserInvitationForm = lazy(() => import('./pages/UserInvitationForm'));
+const PurchaseOptionsWizard = lazy(() => import('./pages/PurchaseOptionsWizard'));
 
 import './App.css';
 import { AnimationProvider } from './components/animations';
@@ -191,6 +192,8 @@ function App() {
                 <Route path="/user/buy-credits" element={<AccountCreditsPage />} />
                 <Route path="/user/create-invitation" element={<UserDesignPicker />} />
                 <Route path="/user/create-invitation/:themeId/:event/:designId" element={<UserInvitationForm />} />
+                <Route path="/user/buy-theme/:themeId" element={<PurchaseOptionsWizard />} />
+                <Route path="/user/buy-design/:themeId/:event/:designId" element={<PurchaseOptionsWizard />} />
               </Routes>
               </Suspense>
               </BrowserRouter>

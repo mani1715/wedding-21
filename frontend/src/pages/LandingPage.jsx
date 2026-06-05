@@ -232,7 +232,7 @@ const Hero = ({ onLogin }) => {
         className="relative z-10 max-w-6xl"
       >
         <motion.span variants={fadeUp} initial="hidden" animate="visible" custom={0} className="lux-eyebrow inline-block mb-4 md:mb-6 text-[10px] md:text-xs">
-          ◆ Premium SaaS for Indian Wedding Photographers
+          ◆ Heirloom Wedding Invitations · Crafted in Code
         </motion.span>
 
         <motion.h1
@@ -242,7 +242,7 @@ const Hero = ({ onLogin }) => {
         >
           Cinematic <span className="text-gold italic font-script font-light">invitations</span>
           <br />
-          worthy of your <em className="not-italic text-gold">artistry.</em>
+          worthy of the <em className="not-italic text-gold">union.</em>
         </motion.h1>
 
         <motion.p
@@ -250,9 +250,9 @@ const Hero = ({ onLogin }) => {
           className="mt-5 md:mt-8 max-w-2xl text-[0.95rem] md:text-[1.18rem] leading-[1.6] md:leading-[1.7]"
           style={{ color: 'rgba(255,248,220,0.72)' }}
         >
-          A locked-luxury invitation platform built for photographers who refuse mediocrity.
-          Royal Mughal to Bengali Traditional — every theme stays elegant in every hand.
-          You charge premium. We protect the design.
+          A locked-luxury invitation studio for couples and the photographers who serve them.
+          From Royal Mughal to Bengali Traditional — every theme stays elegant on every screen.
+          You choose the story. We protect the design.
         </motion.p>
 
         <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={3} className="mt-7 md:mt-10 flex flex-wrap items-center gap-3 md:gap-4">
@@ -350,8 +350,9 @@ const Themes = ({ navigate }) => {
         const themeCredits = masterTheme?.creditCost ?? 1;
         const themePlan = masterTheme?.planRequired || 'FREE';
         return (
-        <motion.button
-          type="button"
+        <motion.div
+          role="button"
+          tabIndex={0}
           key={t.id} variants={fadeUp} custom={i}
           whileHover={{ scale: 1.01, transition: { duration: 0.25, ease: 'easeOut' } }}
           onMouseEnter={() => {
@@ -365,6 +366,7 @@ const Themes = ({ navigate }) => {
             try { getThemeDesignsAsync(t.id); } catch (_) {}
           }}
           onClick={() => navigate(`/themes/${t.id}/events`)}
+          onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/themes/${t.id}/events`); }}
           className="lux-glass p-5 group cursor-pointer text-left w-full overflow-hidden relative"
           data-testid={`theme-card-${t.id}`}
           aria-label={`Preview ${t.name}`}
@@ -468,7 +470,21 @@ const Themes = ({ navigate }) => {
               Preview <ArrowRight className="w-3 h-3" />
             </span>
           </div>
-        </motion.button>
+          {/* Buy CTA — sends user straight into the PurchaseOptionsWizard
+              for this theme.  `as="span"` (well, button-inside-button) is
+              avoided: we stop propagation so the outer card's preview
+              navigation doesn't fire. */}
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={(e) => { e.stopPropagation(); navigate(`/user/buy-theme/${t.id}`); }}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); navigate(`/user/buy-theme/${t.id}`); } }}
+            className="mt-4 lux-btn w-full justify-center !text-[11px]"
+            data-testid={`theme-buy-btn-${t.id}`}
+          >
+            <Coins className="w-3.5 h-3.5" /> Buy this theme
+          </div>
+        </motion.div>
         );
       })}
     </motion.div>

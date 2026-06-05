@@ -170,6 +170,137 @@ def build_user_features_router(
         rows = await cursor.to_list(5000)
         return {"pricing": {r["design_id"]: r for r in rows}}
 
+    # ── PUBLIC EXPIRY TIERS — used by user-facing PurchaseOptionsWizard ───
+    @router.get("/api/public/expiry-tiers")
+    async def public_expiry_tiers():
+        """Returns the list of link-expiry tiers (days + credits) shown
+        in the user-facing PurchaseOptionsWizard. No auth required."""
+        # Seed defaults if collection is empty (mirrors /admin/expiry-tiers).
+        if await db.expiry_tiers.count_documents({}) == 0:
+            defaults = [
+                {"id": "1_month",  "label": "1 Month",  "days": 30,  "credits": 1, "order": 1},
+                {"id": "3_months", "label": "3 Months", "days": 90,  "credits": 2, "order": 2},
+                {"id": "6_months", "label": "6 Months", "days": 180, "credits": 3, "order": 3},
+                {"id": "1_year",   "label": "1 Year",   "days": 365, "credits": 5, "order": 4},
+            ]
+            await db.expiry_tiers.insert_many(defaults)
+        docs = await db.expiry_tiers.find({}, {"_id": 0}).sort("order", 1).to_list(50)
+        return {"tiers": docs}
+
+    # ── PUBLIC ADD-ON CATALOGUE — curated feature add-ons shown in the
+    # PurchaseOptionsWizard. Seeded on first request so the wizard always
+    # has something to render.
+    @router.get("/api/public/addons")
+    async def public_addons():
+        if await db.user_addons.count_documents({}) == 0:
+            defaults = [
+                {"id": "music",          "label": "Background Music",       "description": "Curated royalty-free score plays on the invitation.",         "credits": 1, "order": 1},
+                {"id": "live_gallery",   "label": "Live Photo Gallery",     "description": "Guests upload photos live during the wedding.",               "credits": 3, "order": 2},
+                {"id": "ai_story",       "label": "AI Story Composer",      "description": "Gemini writes a cinematic 'how we met' narrative.",            "credits": 2, "order": 3},
+                {"id": "rsvp",           "label": "Smart RSVP",             "description": "Guest list, +1 tracking and dietary preferences.",            "credits": 1, "order": 4},
+                {"id": "whatsapp",       "label": "WhatsApp Invites",       "description": "One-click WhatsApp share with personalised greetings.",       "credits": 1, "order": 5},
+                {"id": "parking",        "label": "Parking & Travel",       "description": "Parking map, drop-off zones and travel deep links.",           "credits": 1, "order": 6},
+                {"id": "gift_registry",  "label": "Gift Registry",          "description": "Optional gift list or 'no gifts please' note.",               "credits": 1, "order": 7},
+                {"id": "digital_shagun", "label": "Digital Shagun (UPI)",   "description": "Live UPI blessing counter shown on the invitation.",           "credits": 1, "order": 8},
+                {"id": "ai_face_match",  "label": "AI Face-Match Photos",   "description": "Guests find their photos via a single selfie.",               "credits": 3, "order": 9},
+                {"id": "save_the_date",  "label": "Save the Date teaser",   "description": "A teaser page that goes live before the main invitation.",     "credits": 1, "order": 10},
+            ]
+            await db.user_addons.insert_many(defaults)
+        docs = await db.user_addons.find({}, {"_id": 0}).sort("order", 1).to_list(100)
+        return {"addons": docs}
+
+    # ════════════════════════════════════════════════════════════════════
+    # POST-PURCHASE ADD-ONS — buy extra features on an existing invite
+    # ════════════════════════════════════════════════════════════════════
+    @router.post("/api/users/profiles/{profile_id}/buy-addon")
+    async def user_buy_addon(
+        profile_id: str,
+        payload: dict,
+        current=Depends(get_current_public_user),
+    ):
+        """Deduct credits and append the add-on to profile.add_ons."""
+        addon_id = (payload or {}).get("addon_id")
+        if not addon_id:
+            raise HTTPException(400, "addon_id is required")
+
+        profile = await db.profiles.find_one(
+            {"id": profile_id, "user_id": current["user_id"]}, {"_id": 0}
+        )
+        if not profile:
+            raise HTTPException(404, "Invitation not found")
+
+        addon = await db.user_addons.find_one({"id": addon_id}, {"_id": 0})
+        if not addon:
+            raise HTTPException(404, "Add-on not found")
+
+        # Idempotency — if already purchased, return success without re-charging
+        existing_ids = {a.get("id") for a in (profile.get("add_ons") or [])}
+        if addon_id in existing_ids:
+            user_doc = await db.users.find_one({"user_id": current["user_id"]}, {"_id": 0, "password_hash": 0})
+            return {
+                "success": True,
+                "already_purchased": True,
+                "addon": addon,
+                "credits_charged": 0,
+                "balance": int(user_doc.get("credits", 0)) if user_doc else 0,
+            }
+
+        cost = int(addon.get("credits", 0) or 0)
+        user_doc = await db.users.find_one({"user_id": current["user_id"]}, {"_id": 0})
+        balance = int(user_doc.get("credits", 0)) if user_doc else 0
+        if balance < cost:
+            raise HTTPException(
+                402,
+                {"error": "Insufficient credits", "required": cost, "balance": balance, "addon_id": addon_id},
+            )
+
+        now_iso = _now_iso()
+        addon_entry = {
+            "id": addon["id"],
+            "label": addon["label"],
+            "credits": cost,
+            "purchased_at": now_iso,
+        }
+        await db.profiles.update_one(
+            {"id": profile_id, "user_id": current["user_id"]},
+            {
+                "$push": {"add_ons": addon_entry},
+                "$set":  {"updated_at": now_iso},
+            },
+        )
+        if cost > 0:
+            await db.users.update_one(
+                {"user_id": current["user_id"]},
+                {"$inc": {"credits": -cost}},
+            )
+            await db.user_credit_ledger.insert_one({
+                "id": uuid.uuid4().hex,
+                "user_id": current["user_id"],
+                "action": "spend",
+                "amount": -cost,
+                "reason": f"Add-on · {addon['label']} · {profile.get('slug','')}",
+                "profile_id": profile_id,
+                "addon_id": addon_id,
+                "created_at": now_iso,
+            })
+
+        updated_user = await db.users.find_one(
+            {"user_id": current["user_id"]}, {"_id": 0, "password_hash": 0}
+        )
+        updated_profile = await db.profiles.find_one(
+            {"id": profile_id}, {"_id": 0, "admin_id": 0}
+        )
+        if updated_profile:
+            updated_profile["invitation_link"] = f"/invite/{updated_profile['slug']}"
+        return {
+            "success": True,
+            "already_purchased": False,
+            "addon": addon_entry,
+            "credits_charged": cost,
+            "balance": int(updated_user.get("credits", 0)) if updated_user else 0,
+            "profile": updated_profile,
+        }
+
     # ════════════════════════════════════════════════════════════════════
     # USER CREDIT PURCHASE — Razorpay
     # ════════════════════════════════════════════════════════════════════

@@ -98,6 +98,13 @@ export default function UserDashboard() {
             <Plus className="w-4 h-4" /> Create Invitation
           </button>
           <button
+            onClick={() => { navigate('/'); setTimeout(() => { window.location.hash = '#themes'; }, 50); }}
+            className="lux-btn lux-btn-ghost"
+            data-testid="user-browse-themes-btn"
+          >
+            <Sparkles className="w-4 h-4" /> Browse Themes
+          </button>
+          <button
             onClick={async () => { await logout(); navigate('/'); }}
             className="text-[10px] tracking-[0.25em] uppercase px-3 py-1.5 rounded-full"
             style={{ border: '1px solid var(--lux-border)', color: 'rgba(255,248,220,0.65)' }}

@@ -4,7 +4,7 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles, ArrowLeft, Calendar, MapPin, Copy, Check, ExternalLink, Edit3, Trash2,
-  Wallet, Coins, AlertTriangle, X, Save, ShoppingBag,
+  Wallet, Coins, AlertTriangle, X, Save, ShoppingBag, Plus,
 } from 'lucide-react';
 import { useUserAuth } from '@/context/UserAuthContext';
 import '../styles/luxury.css';
@@ -47,6 +47,8 @@ export default function UserProfile() {
   const [copied, setCopied] = useState(null);
   const [editing, setEditing] = useState(null);  // profile being edited
   const [deleting, setDeleting] = useState(null); // profile pending deletion
+  const [addingFeatures, setAddingFeatures] = useState(null); // profile we're adding addons to
+  const [addonCatalog, setAddonCatalog] = useState([]);
   const [toast, setToast] = useState('');
 
   useEffect(() => {
@@ -61,14 +63,16 @@ export default function UserProfile() {
   const loadAll = async () => {
     setBusy(true);
     try {
-      const [p, h, l] = await Promise.all([
+      const [p, h, l, a] = await Promise.all([
         axios.get(`${API_URL}/api/users/profiles`, { withCredentials: true }),
         axios.get(`${API_URL}/api/users/credits/purchases`, { withCredentials: true }).catch(() => ({ data: { purchases: [] } })),
         axios.get(`${API_URL}/api/users/credits/ledger`, { withCredentials: true }).catch(() => ({ data: { entries: [] } })),
+        axios.get(`${API_URL}/api/public/addons`).catch(() => ({ data: { addons: [] } })),
       ]);
       setProfiles(p.data?.profiles || []);
       setPurchases(h.data?.purchases || []);
       setLedger(l.data?.entries || []);
+      setAddonCatalog(a.data?.addons || []);
     } finally {
       setBusy(false);
     }
@@ -119,6 +123,31 @@ export default function UserProfile() {
       flash(err?.response?.data?.detail || 'Delete failed');
     } finally {
       setDeleting(null);
+    }
+  };
+
+  const buyAddon = async (profile, addon) => {
+    try {
+      const { data } = await axios.post(
+        `${API_URL}/api/users/profiles/${profile.id}/buy-addon`,
+        { addon_id: addon.id },
+        { withCredentials: true },
+      );
+      if (data?.already_purchased) {
+        flash(`${addon.label} already added`);
+      } else {
+        flash(`Added ${addon.label} · −${data?.credits_charged ?? 0} credits`);
+      }
+      // Update local profile add_ons + reload ledger
+      setProfiles((arr) => arr.map((p) => p.id === profile.id ? (data?.profile || p) : p));
+      loadAll();
+    } catch (err) {
+      const detail = err?.response?.data?.detail;
+      if (detail?.error === 'Insufficient credits') {
+        flash(`Need ${detail.required} credits — balance is ${detail.balance}`);
+      } else {
+        flash(typeof detail === 'string' ? detail : 'Could not add feature');
+      }
     }
   };
 
@@ -272,6 +301,14 @@ export default function UserProfile() {
                       <Edit3 className="w-3 h-3" /> Edit
                     </button>
                     <button
+                      onClick={() => setAddingFeatures(p)}
+                      className="lux-btn lux-btn-ghost text-xs flex-1 justify-center"
+                      style={{ borderColor: 'rgba(212,175,55,0.55)', color: '#E8C766' }}
+                      data-testid={`invitation-add-features-${p.id}`}
+                    >
+                      <Plus className="w-3 h-3" /> Add features
+                    </button>
+                    <button
                       onClick={() => setDeleting(p)}
                       className="lux-btn lux-btn-ghost text-xs flex-1 justify-center"
                       style={{ borderColor: 'rgba(255,80,80,0.45)', color: '#FFB47C' }}
@@ -354,6 +391,18 @@ export default function UserProfile() {
       </AnimatePresence>
 
       {/* Delete Confirmation */}
+      <AnimatePresence>
+        {addingFeatures && (
+          <AddFeaturesModal
+            profile={addingFeatures}
+            addonCatalog={addonCatalog}
+            balance={user?.credits ?? 0}
+            onClose={() => setAddingFeatures(null)}
+            onBuy={async (addon) => { await buyAddon(addingFeatures, addon); }}
+          />
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {deleting && (
           <motion.div
@@ -514,6 +563,98 @@ function EditInvitationModal({ profile, onClose, onSave }) {
           </button>
         </div>
       </motion.form>
+    </motion.div>
+  );
+}
+
+
+function AddFeaturesModal({ profile, addonCatalog, balance, onClose, onBuy }) {
+  const ownedIds = new Set((profile.add_ons || []).map((a) => a.id));
+  const [busyId, setBusyId] = useState(null);
+
+  const handleBuy = async (addon) => {
+    setBusyId(addon.id);
+    await onBuy(addon);
+    setBusyId(null);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+      className="fixed inset-0 z-50 grid place-items-center p-4"
+      style={{ background: 'rgba(10,6,2,0.85)', backdropFilter: 'blur(8px)' }}
+      data-testid="add-features-modal"
+    >
+      <motion.div
+        onClick={(e) => e.stopPropagation()}
+        initial={{ scale: 0.95, y: 10 }}
+        animate={{ scale: 1, y: 0 }}
+        className="lux-glass p-7 max-w-3xl w-full relative max-h-[90vh] overflow-y-auto"
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 rounded-full hover:opacity-80"
+          style={{ background: 'rgba(255,248,220,0.08)', border: '1px solid var(--lux-border)' }}
+          data-testid="add-features-close"
+        >
+          <X className="w-4 h-4" style={{ color: '#FFF8DC' }} />
+        </button>
+        <span className="lux-eyebrow block mb-2">◆ Add features</span>
+        <h3 className="font-display text-2xl mb-1" style={{ color: '#FFF8DC' }}>
+          Upgrade <span className="italic font-script text-gold">{profile.groom_name} &amp; {profile.bride_name}</span>
+        </h3>
+        <p className="text-xs mb-6" style={{ color: 'rgba(255,248,220,0.6)' }}>
+          Each add-on charges credits from your wallet. Balance: <span className="text-gold">{balance}</span>
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" data-testid="add-features-grid">
+          {addonCatalog.map((a) => {
+            const owned = ownedIds.has(a.id);
+            const cantAfford = !owned && balance < (a.credits || 0);
+            return (
+              <div
+                key={a.id}
+                className="lux-glass p-4 flex flex-col"
+                style={{ borderColor: owned ? '#D4AF37' : 'var(--lux-border)' }}
+                data-testid={`add-feature-row-${a.id}`}
+              >
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <h4 className="font-display text-base" style={{ color: '#FFF8DC' }}>{a.label}</h4>
+                  <span
+                    className="px-2 py-1 rounded-full text-[10px] tracking-[0.15em] uppercase inline-flex items-center gap-1 shrink-0"
+                    style={{
+                      background: owned ? 'rgba(212,175,55,0.18)' : 'rgba(255,248,220,0.06)',
+                      color: owned ? '#E8C766' : 'rgba(255,248,220,0.7)',
+                    }}
+                  >
+                    <Coins className="w-3 h-3" /> {a.credits}
+                  </span>
+                </div>
+                <p className="text-[11px] mb-3 flex-1" style={{ color: 'rgba(255,248,220,0.6)' }}>{a.description}</p>
+                {owned ? (
+                  <div className="inline-flex items-center justify-center gap-1.5 text-[11px] tracking-[0.15em] uppercase text-gold" data-testid={`add-feature-owned-${a.id}`}>
+                    <Check className="w-3.5 h-3.5" /> Already added
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleBuy(a)}
+                    disabled={busyId === a.id || cantAfford}
+                    className="lux-btn justify-center text-xs"
+                    data-testid={`add-feature-buy-${a.id}`}
+                  >
+                    {busyId === a.id ? 'Adding…' : cantAfford ? 'Not enough credits' : <>Add · {a.credits} credit{a.credits === 1 ? '' : 's'}</>}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </motion.div>
     </motion.div>
   );
 }

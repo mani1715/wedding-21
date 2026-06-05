@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import {
@@ -47,7 +47,19 @@ const Field = ({ label, hint, children, testId }) => (
 export default function UserInvitationForm() {
   const { themeId, event, designId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, loading, refresh } = useUserAuth();
+
+  // ── Add-ons carried over from PurchaseOptionsWizard via ?addons=a,b,c
+  // and ?expiry=1_month.  These are already "paid" in the wizard flow,
+  // so we display them as ✓ Purchased — included.
+  const purchasedAddonIds = useMemo(() => {
+    const raw = searchParams.get('addons') || '';
+    return raw.split(',').map((s) => s.trim()).filter(Boolean);
+  }, [searchParams]);
+  const expiryTierId = searchParams.get('expiry') || null;
+  const [addonCatalog, setAddonCatalog] = useState([]);
+  const [expiryTiers, setExpiryTiers] = useState([]);
 
   // PHASE 8: lazy-load this specific theme's design config.
   const themeData = useThemeDesigns(themeId) || ALL_DESIGNS?.[themeId];
@@ -94,7 +106,18 @@ export default function UserInvitationForm() {
     if (!design) { navigate('/user/create-invitation', { replace: true }); return; }
     axios.get(`${API_URL}/api/public/design-pricing`)
       .then((r) => setCost(r.data?.pricing?.[designId]?.credits ?? 1));
-  }, [loading, user, design, designId, navigate]);
+    // Load the add-on catalogue + expiry tiers so we can render the
+    // "Purchased — included" badges (and show their human-readable labels).
+    if (purchasedAddonIds.length || expiryTierId) {
+      Promise.all([
+        axios.get(`${API_URL}/api/public/addons`).catch(() => ({ data: { addons: [] } })),
+        axios.get(`${API_URL}/api/public/expiry-tiers`).catch(() => ({ data: { tiers: [] } })),
+      ]).then(([a, t]) => {
+        setAddonCatalog(a.data?.addons || []);
+        setExpiryTiers(t.data?.tiers || []);
+      });
+    }
+  }, [loading, user, design, designId, navigate, purchasedAddonIds.length, expiryTierId]);
 
   const set = (k) => (e) => setForm((s) => ({ ...s, [k]: e.target.value }));
 
@@ -174,8 +197,28 @@ export default function UserInvitationForm() {
           : null,
       };
       const { data } = await axios.post(`${API_URL}/api/users/profiles`, payload, { withCredentials: true });
+
+      // If the user came through the PurchaseOptionsWizard, charge the
+      // selected add-ons against this freshly-created profile so they
+      // show up as "purchased" in `profile.add_ons`.
+      const newProfile = data?.profile;
+      if (newProfile?.id && purchasedAddonIds.length > 0) {
+        for (const addonId of purchasedAddonIds) {
+          try {
+            await axios.post(
+              `${API_URL}/api/users/profiles/${newProfile.id}/buy-addon`,
+              { addon_id: addonId },
+              { withCredentials: true },
+            );
+          } catch (_e) {
+            // Silently swallow — if balance ran out mid-flow we'll still
+            // show the success screen for the invitation itself.
+          }
+        }
+      }
+
       await refresh?.();
-      setSuccess(data?.profile);
+      setSuccess(newProfile);
     } catch (err) {
       const detail = err?.response?.data?.detail;
       if (detail?.error === 'Insufficient credits') {
@@ -230,6 +273,8 @@ export default function UserInvitationForm() {
               testId="form-preview-render"
             />
           </div>
+          {/* Purchased add-ons summary — only shown if the user came
+              through the PurchaseOptionsWizard with ?addons=… */}
           <div className="mt-4 p-4 lux-glass flex items-center justify-between">
             <div>
               <div className="text-[10px] tracking-[0.25em] uppercase" style={{ color: 'rgba(255,248,220,0.55)' }}>This Design</div>
@@ -241,6 +286,40 @@ export default function UserInvitationForm() {
               <Coins className="w-3 h-3" /> {cost} credit{cost === 1 ? '' : 's'}
             </div>
           </div>
+          {(purchasedAddonIds.length > 0 || expiryTierId) && (
+            <div className="lux-glass p-4 mt-4" data-testid="purchased-addons">
+              <span className="lux-eyebrow block mb-2">◆ Purchased — included</span>
+              <ul className="space-y-1.5 text-xs" style={{ color: 'rgba(255,248,220,0.85)' }}>
+                {purchasedAddonIds.map((id) => {
+                  const meta = addonCatalog.find((a) => a.id === id);
+                  return (
+                    <li key={id} className="flex items-center gap-2" data-testid={`purchased-addon-${id}`}>
+                      <Check className="w-3.5 h-3.5 text-gold shrink-0" />
+                      <span className="flex-1">{meta?.label || id}</span>
+                      {meta?.credits != null && (
+                        <span className="text-[10px] tracking-[0.18em] uppercase opacity-70">
+                          {meta.credits} credit{meta.credits === 1 ? '' : 's'}
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
+                {expiryTierId && (
+                  <li className="flex items-center gap-2" data-testid="purchased-expiry">
+                    <Check className="w-3.5 h-3.5 text-gold shrink-0" />
+                    <span className="flex-1">
+                      Link expiry · {expiryTiers.find((t) => t.id === expiryTierId)?.label || expiryTierId}
+                    </span>
+                    {expiryTiers.find((t) => t.id === expiryTierId)?.credits != null && (
+                      <span className="text-[10px] tracking-[0.18em] uppercase opacity-70">
+                        {expiryTiers.find((t) => t.id === expiryTierId).credits} credit{expiryTiers.find((t) => t.id === expiryTierId).credits === 1 ? '' : 's'}
+                      </span>
+                    )}
+                  </li>
+                )}
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Form */}
