@@ -4426,10 +4426,10 @@ async def list_song_requests_public_alias(slug: str, limit: int = 30):
 # be eaten by the catch-all and return 400 "Invalid event type". The original handler
 # lives further down in the file; this alias just forwards to it lazily.
 @api_router.get("/invite/{slug}/calendar")
-async def download_calendar_alias(slug: str):
+async def download_calendar_alias(slug: str, event_id: Optional[str] = None):
     """Public alias for ICS calendar (registered before catch-all)."""
     # Late-bound delegate — `download_calendar` is defined later in this file.
-    return await download_calendar(slug)  # noqa: F821 (defined later)
+    return await download_calendar(slug, event_id=event_id)  # noqa: F821 (defined later)
 
 
 @api_router.get("/invite/{slug}/{event_type}", response_model=InvitationPublicView)
@@ -6456,8 +6456,12 @@ async def generate_qr_code(slug: str):
 
 
 @api_router.get("/invite/{slug}/calendar")
-async def download_calendar(slug: str):
-    """PHASE 11: Generate .ics calendar file for wedding events"""
+async def download_calendar(slug: str, event_id: Optional[str] = None):
+    """PHASE 11: Generate .ics calendar file for wedding events.
+
+    If `event_id` is provided, only that single event is exported (used by the
+    per-event "Add to Calendar" pill on the live timeline).
+    """
     profile = await db.profiles.find_one({"slug": slug}, {"_id": 0})
     
     if not profile:
@@ -6470,8 +6474,12 @@ async def download_calendar(slug: str):
     if isinstance(profile.get('event_date'), str):
         profile['event_date'] = datetime.fromisoformat(profile['event_date'])
     
-    # Get events
-    events = profile.get('events', [])
+    # Get events (optionally filtered to a single event_id)
+    events = profile.get('events', []) or []
+    if event_id:
+        events = [e for e in events if e.get('event_id') == event_id]
+        if not events:
+            raise HTTPException(status_code=404, detail="Event not found for this invitation")
     
     # Build .ics file content
     ics_lines = [

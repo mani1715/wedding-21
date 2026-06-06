@@ -548,7 +548,7 @@ const LuxuryPublicInvitation = () => {
 
         {/* Bucket 1A — Live event timeline (Now / Next / Done) */}
         {(data?.sections_enabled?.live_timeline ?? false) && (
-          <LiveTimelineSection events={events} />
+          <LiveTimelineSection events={events} slug={slug} />
         )}
 
         {/* Bucket 1A — Dress Code carousel */}

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Calendar, MapPin } from 'lucide-react';
+import AddToCalendarButton from './AddToCalendarButton';
 
 const parseEventDateTime = (e) => {
   if (!e) return null;
@@ -41,7 +42,7 @@ const statusOf = (start, end, now) => {
  * Renders the wedding day timeline with NOW / UPCOMING / DONE badges.
  * Auto-refreshes every minute so the "Now" indicator stays accurate.
  */
-const LiveTimelineSection = ({ events = [] }) => {
+const LiveTimelineSection = ({ events = [], slug }) => {
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -139,6 +140,17 @@ const LiveTimelineSection = ({ events = [] }) => {
                   <p className="mt-1 text-sm leading-relaxed max-w-2xl" style={{ color: 'rgba(255,248,220,0.55)' }}>
                     {e.description}
                   </p>
+                )}
+                {slug && e.event_id && status !== 'done' && (
+                  <div className="mt-3">
+                    <AddToCalendarButton
+                      slug={slug}
+                      eventId={e.event_id}
+                      label="Add this event"
+                      subtle
+                      size="sm"
+                    />
+                  </div>
                 )}
               </li>
             );
