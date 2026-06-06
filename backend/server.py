@@ -4421,6 +4421,17 @@ async def list_song_requests_public_alias(slug: str, limit: int = 30):
     return out
 
 
+# IMPORTANT: this alias MUST stay above the catch-all `/invite/{slug}/{event_type}`
+# below — FastAPI matches routes by registration order, so /calendar would otherwise
+# be eaten by the catch-all and return 400 "Invalid event type". The original handler
+# lives further down in the file; this alias just forwards to it lazily.
+@api_router.get("/invite/{slug}/calendar")
+async def download_calendar_alias(slug: str):
+    """Public alias for ICS calendar (registered before catch-all)."""
+    # Late-bound delegate — `download_calendar` is defined later in this file.
+    return await download_calendar(slug)  # noqa: F821 (defined later)
+
+
 @api_router.get("/invite/{slug}/{event_type}", response_model=InvitationPublicView)
 async def get_event_invitation(slug: str, event_type: str):
     """Get public invitation for specific event
@@ -5468,9 +5479,10 @@ async def guest_check_in(slug: str, payload: CheckInCreate):
             raise HTTPException(status_code=400, detail="Invalid event_id")
 
     # Prevent rapid duplicates (same guest_name + phone + event within 30 min)
-    name_key = payload.guest_name.strip().lower()
+    # Match guest_name case-insensitively to avoid 'Riya' vs 'riya' duplicates.
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=30)
-    dup_q: Dict[str, Any] = {"profile_id": profile['id'], "guest_name": payload.guest_name.strip()}
+    name_regex = re.compile(f"^{re.escape(payload.guest_name.strip())}$", re.IGNORECASE)
+    dup_q: Dict[str, Any] = {"profile_id": profile['id'], "guest_name": name_regex}
     if event_id:
         dup_q["event_id"] = event_id
     if payload.guest_phone:

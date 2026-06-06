@@ -5,6 +5,39 @@ Cloned from `https://github.com/mani1715/wedding-19` on 2026-06-05.
 Massive existing codebase (FastAPI + React) — luxury Indian wedding invitation
 SaaS for photographers AND retail users (couples).
 
+
+## Master Prompt Roadmap (locked 2026-06-06)
+**Order:** Bucket 1 → 3 → 4 → 5 → 2. Bucket 6 SKIPPED.
+**Integration policy:** 3rd-party API keys (Razorpay, Twilio, SendGrid, WhatsApp Cloud, hCaptcha, Sentry) are placeholders in `.env`; user will provide at the very end. Emergent LLM Key handles translations + transcription for free.
+
+### ✅ Bucket 1A — Public Invitation Guest Features (DONE 2026-06-06)
+**Backend (`/app/backend/models.py`, `/app/backend/server.py`)**
+- New Pydantic models: `LiveStreamSettings`, `SongRequestSettings`, `DressCodeSettings`/`DressCodeItem`, `SongRequest`(+Create/Response), `CheckIn`(+Create/Response/Stats).
+- Extended `SectionsEnabled` with: `live_stream`, `live_timeline`, `song_requests`, `dress_code`, `check_in`.
+- Extended `Profile`, `ProfileUpdate`, `InvitationPublicView` with the three new settings objects.
+- `_build_invitation_public_view` emits the new fields (2 locations).
+- **New routes** (registered just before catch-all `/invite/{slug}/{event_type}`):
+  - `GET  /api/invite/{slug}/songs` — public list of song requests (alias avoiding catch-all)
+  - `GET  /api/invite/{slug}/calendar` — ICS alias (fix for route-ordering regression discovered in iteration 4)
+- **New routes** (after admin RSVP export):
+  - `POST /api/invite/{slug}/song-requests` (public, per-guest rate-limited)
+  - `GET  /api/admin/profiles/{profile_id}/song-requests` (admin auth, owner-only)
+  - `DELETE /api/admin/song-requests/{request_id}` (admin auth, owner-only)
+  - `POST /api/invite/{slug}/check-in` (public, idempotent within 30 min, case-insensitive name)
+  - `GET  /api/admin/profiles/{profile_id}/check-ins` → `{check_ins, stats:{total_check_ins, per_event}}`
+- Seed script `/app/backend/scripts/seed_bucket1a_demo.py` enables Bucket 1A on `aarav-and-riya-demo`.
+
+**Frontend (`/app/frontend/src/components/luxury/`)** — 6 new components wired into `LuxuryPublicInvitation.jsx`:
+- `AddToCalendarButton.jsx` — prominent CTA linking to ICS endpoint
+- `LiveStreamSection.jsx` — YouTube auto-embed + "Watch Live" pill for other platforms
+- `LiveTimelineSection.jsx` — events ordered with NOW / UPCOMING / DONE badges (auto-refresh / minute)
+- `SongRequestSection.jsx` — guest form + live list of recent picks
+- `CheckInSection.jsx` — quick "I've Arrived" form with optional event selector
+- `DressCodeSection.jsx` — horizontal-scroll carousel with color swatches & notes
+
+**Tests** — `/app/backend/tests/test_bucket1a_song_checkin.py` (14 pass / 2 graceful skip).
+
+
 ## What's been implemented this run (2026-06-05)
 
 ### Iteration 4 — Polish round (2026-06-05)
