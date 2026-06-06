@@ -23,6 +23,12 @@ import PreWeddingSection from '@/components/luxury/PreWeddingSection';
 import MajaReferralCTA from '@/components/luxury/MajaReferralCTA';
 import PersonalizedWelcome from '@/components/luxury/PersonalizedWelcome';
 import HoneymoonFundSection from '@/components/luxury/HoneymoonFundSection';
+import AddToCalendarButton from '@/components/luxury/AddToCalendarButton';
+import LiveStreamSection from '@/components/luxury/LiveStreamSection';
+import LiveTimelineSection from '@/components/luxury/LiveTimelineSection';
+import SongRequestSection from '@/components/luxury/SongRequestSection';
+import CheckInSection from '@/components/luxury/CheckInSection';
+import DressCodeSection from '@/components/luxury/DressCodeSection';
 import { getThemeById } from '@/themes/masterThemes';
 import { resolveDesign, resolveHeroDesign, findDesignById, normaliseEvent, pageBgForDesign } from '@/themes/themeDesignResolver';
 import UniversalDesignRenderer from '@/themes/UniversalDesignRenderer';
@@ -540,6 +546,28 @@ const LuxuryPublicInvitation = () => {
           </section>
         )}
 
+        {/* Bucket 1A — Live event timeline (Now / Next / Done) */}
+        {(data?.sections_enabled?.live_timeline ?? false) && (
+          <LiveTimelineSection events={events} />
+        )}
+
+        {/* Bucket 1A — Dress Code carousel */}
+        <DressCodeSection settings={data.dress_code_settings} />
+
+        {/* Bucket 1A — Live Stream link / embed */}
+        <LiveStreamSection liveStream={data.live_stream} />
+
+        {/* Bucket 1A — Add to Calendar prominent CTA strip */}
+        <ScrollSection className="px-6 md:px-16 py-10" testid="section-add-to-calendar">
+          <div className="max-w-3xl mx-auto text-center">
+            <span className="lux-eyebrow inline-block mb-4">◆ Save the dates</span>
+            <h3 className="font-display text-[1.6rem] md:text-[2rem] mb-5" style={{ color: '#FFF8DC' }}>
+              One tap. <span className="text-gold italic font-script">All events.</span>
+            </h3>
+            <AddToCalendarButton slug={slug} />
+          </div>
+        </ScrollSection>
+
         {/* Venue / map */}
         {venueText && (
           <ScrollSection className="px-6 md:px-16 py-24 max-w-4xl mx-auto" testid="section-venue">
@@ -613,6 +641,16 @@ const LuxuryPublicInvitation = () => {
 
         {/* Phase 1H — Honeymoon Fund (UPI / QR) — shown only when couple has enabled it */}
         <HoneymoonFundSection fund={data.honeymoon_fund} couple={`${bride} & ${groom}`} />
+
+        {/* Bucket 1A — Guest Check-In */}
+        <CheckInSection
+          slug={slug}
+          enabled={data?.sections_enabled?.check_in ?? false}
+          events={events}
+        />
+
+        {/* Bucket 1A — Song Requests (build the playlist) */}
+        <SongRequestSection slug={slug} settings={data.song_requests_settings} />
 
         {/* Wishes — Prompt 07: moderated wishes wall with featured spotlight */}
         <WishesWallSection slug={slug} />

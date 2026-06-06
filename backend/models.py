@@ -811,6 +811,12 @@ class SectionsEnabled(BaseModel):
     decorative_effects: bool = True  # PHASE 17: Master toggle for all decorative effects (lord, bells, lamps, flowers)
     guest_rooms: bool = True  # Find My Room (Guest accommodation lookup)
     pre_wedding: bool = True  # Pre-wedding shoot links section
+    # Bucket 1A — new guest-engagement sections
+    live_stream: bool = False  # Live stream link / embed
+    live_timeline: bool = False  # Live event timeline (NOW / NEXT badges)
+    song_requests: bool = False  # Guest song requests form
+    dress_code: bool = False  # Dress code carousel
+    check_in: bool = False  # Guest check-in
 
 
 class GuestRoom(BaseModel):
@@ -943,6 +949,183 @@ class HoneymoonFund(BaseModel):
     raised_amount: int = 0  # Amount raised so far (manual update by couple)
 
 
+# Bucket 1A — Live Stream (YouTube/Zoom/Meet link)
+class LiveStreamSettings(BaseModel):
+    """Live streaming link for remote guests."""
+    model_config = ConfigDict(extra="ignore")
+
+    enabled: bool = False
+    url: Optional[str] = None              # YouTube / Zoom / Meet URL
+    platform: Optional[str] = None         # youtube | zoom | meet | facebook | other
+    scheduled_at: Optional[datetime] = None  # When the stream begins (optional)
+    message: Optional[str] = None          # Optional couple's note ("Join us from anywhere")
+    embed_enabled: bool = True             # If true, attempt to inline-embed (YouTube)
+
+
+# Bucket 1A — Song Request settings (whether guests can submit songs)
+class SongRequestSettings(BaseModel):
+    """Toggle and limits for guest song requests."""
+    model_config = ConfigDict(extra="ignore")
+
+    enabled: bool = False
+    max_per_guest: int = 3                 # Max requests per guest_name+phone
+    default_provider: Optional[str] = None  # spotify | youtube | apple | none
+    intro_message: Optional[str] = "Help us build the night's playlist."
+
+
+# Bucket 1A — Dress Code carousel (per-event or general)
+class DressCodeItem(BaseModel):
+    """Single dress-code card."""
+    model_config = ConfigDict(extra="ignore")
+
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    label: str                              # e.g. "Mehendi — Yellow"
+    color: Optional[str] = None             # Hex / colour name
+    image_url: Optional[str] = None         # Optional outfit reference image
+    event_type: Optional[str] = None        # haldi | mehendi | marriage | reception | engagement
+    notes: Optional[str] = None             # Short note (max 200 chars)
+
+    @field_validator('notes')
+    def _validate_notes(cls, v):
+        if v is not None and len(v) > 200:
+            raise ValueError('Notes must be 200 characters or less')
+        return v
+
+
+class DressCodeSettings(BaseModel):
+    """Carousel of dress codes per event."""
+    model_config = ConfigDict(extra="ignore")
+
+    enabled: bool = False
+    title: str = "Dress Code"
+    items: List[DressCodeItem] = Field(default_factory=list)
+
+
+# Bucket 1A — Song Request document (per-guest submission)
+class SongRequest(BaseModel):
+    """A single song suggestion submitted by a guest."""
+    model_config = ConfigDict(extra="ignore")
+
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    profile_id: str
+    guest_name: str
+    guest_phone: Optional[str] = None
+    song_title: str
+    artist: Optional[str] = None
+    provider_url: Optional[str] = None      # Optional Spotify/YT link
+    message: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    @field_validator('song_title')
+    def _validate_song_title(cls, v):
+        if not v or not v.strip():
+            raise ValueError('song_title is required')
+        if len(v) > 120:
+            raise ValueError('song_title must be 120 characters or less')
+        return v.strip()
+
+    @field_validator('artist')
+    def _validate_artist(cls, v):
+        if v is not None and len(v) > 80:
+            raise ValueError('artist must be 80 characters or less')
+        return v
+
+    @field_validator('message')
+    def _validate_msg(cls, v):
+        if v is not None and len(v) > 200:
+            raise ValueError('message must be 200 characters or less')
+        return v
+
+
+class SongRequestCreate(BaseModel):
+    guest_name: str
+    guest_phone: Optional[str] = None
+    song_title: str
+    artist: Optional[str] = None
+    provider_url: Optional[str] = None
+    message: Optional[str] = None
+
+    @field_validator('guest_name')
+    def _validate_guest_name(cls, v):
+        if not v or not v.strip():
+            raise ValueError('guest_name is required')
+        return v.strip()
+
+    @field_validator('song_title')
+    def _validate_song_title(cls, v):
+        if not v or not v.strip():
+            raise ValueError('song_title is required')
+        if len(v) > 120:
+            raise ValueError('song_title must be 120 characters or less')
+        return v.strip()
+
+    @field_validator('provider_url')
+    def _validate_url(cls, v):
+        if v is None or not str(v).strip():
+            return None
+        s = str(v).strip()
+        if not (s.startswith('http://') or s.startswith('https://')):
+            raise ValueError('provider_url must start with http:// or https://')
+        return s
+
+
+class SongRequestResponse(BaseModel):
+    id: str
+    guest_name: str
+    song_title: str
+    artist: Optional[str] = None
+    provider_url: Optional[str] = None
+    message: Optional[str] = None
+    created_at: datetime
+
+
+# Bucket 1A — Guest Check-In (event arrival log)
+class CheckIn(BaseModel):
+    """A guest's check-in at the venue (or per event)."""
+    model_config = ConfigDict(extra="ignore")
+
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    profile_id: str
+    event_id: Optional[str] = None          # Optional WeddingEvent.event_id
+    guest_name: str
+    guest_phone: Optional[str] = None
+    note: Optional[str] = None
+    source: str = "web"                     # web | qr | manual
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    @field_validator('guest_name')
+    def _vn(cls, v):
+        if not v or not v.strip():
+            raise ValueError('guest_name is required')
+        return v.strip()[:80]
+
+
+class CheckInCreate(BaseModel):
+    guest_name: str
+    guest_phone: Optional[str] = None
+    event_id: Optional[str] = None
+    note: Optional[str] = None
+    source: Optional[str] = "web"
+
+    @field_validator('guest_name')
+    def _v(cls, v):
+        if not v or not v.strip():
+            raise ValueError('guest_name is required')
+        return v.strip()
+
+
+class CheckInResponse(BaseModel):
+    id: str
+    guest_name: str
+    event_id: Optional[str] = None
+    created_at: datetime
+
+
+class CheckInStats(BaseModel):
+    total_check_ins: int
+    per_event: Dict[str, int] = Field(default_factory=dict)
+
+
 class Profile(BaseModel):
     model_config = ConfigDict(extra="ignore")
     
@@ -985,6 +1168,10 @@ class Profile(BaseModel):
     contact_info: ContactInfo = Field(default_factory=ContactInfo)  # PHASE 11: Contact information
     rsvp_settings: RSVPSettings = Field(default_factory=RSVPSettings)  # Phase 1C: RSVP form field toggles
     honeymoon_fund: HoneymoonFund = Field(default_factory=HoneymoonFund)  # Phase 1H: Honeymoon fund
+    # Bucket 1A — guest engagement settings
+    live_stream: LiveStreamSettings = Field(default_factory=LiveStreamSettings)
+    song_requests_settings: SongRequestSettings = Field(default_factory=SongRequestSettings)
+    dress_code_settings: DressCodeSettings = Field(default_factory=DressCodeSettings)
     events: List[WeddingEvent] = Field(default_factory=list)  # Wedding events schedule
     # Guest Accommodation & Pre-wedding Shoot
     guest_rooms: List[GuestRoom] = Field(default_factory=list)  # Guest room assignments
@@ -1246,6 +1433,10 @@ class ProfileUpdate(BaseModel):
     contact_info: Optional[ContactInfo] = None  # PHASE 11: Contact information
     rsvp_settings: Optional[RSVPSettings] = None  # Phase 1C
     honeymoon_fund: Optional[HoneymoonFund] = None  # Phase 1H
+    # Bucket 1A
+    live_stream: Optional[LiveStreamSettings] = None
+    song_requests_settings: Optional[SongRequestSettings] = None
+    dress_code_settings: Optional[DressCodeSettings] = None
     events: Optional[List[WeddingEvent]] = None
     guest_rooms: Optional[List[GuestRoom]] = None  # Guest accommodation list
     pre_wedding_links: Optional[List[PreWeddingLink]] = None  # Pre-wedding shoot links
@@ -1363,6 +1554,10 @@ class ProfileResponse(BaseModel):
     contact_info: ContactInfo  # PHASE 11: Contact information
     rsvp_settings: RSVPSettings = Field(default_factory=RSVPSettings)  # Phase 1C
     honeymoon_fund: HoneymoonFund = Field(default_factory=HoneymoonFund)  # Phase 1H
+    # Bucket 1A
+    live_stream: LiveStreamSettings = Field(default_factory=LiveStreamSettings)
+    song_requests_settings: SongRequestSettings = Field(default_factory=SongRequestSettings)
+    dress_code_settings: DressCodeSettings = Field(default_factory=DressCodeSettings)
     events: List[WeddingEvent]
     guest_rooms: List[GuestRoom] = Field(default_factory=list)
     pre_wedding_links: List[PreWeddingLink] = Field(default_factory=list)
@@ -1495,6 +1690,10 @@ class InvitationPublicView(BaseModel):
     contact_info: ContactInfo  # PHASE 11: Contact information
     rsvp_settings: RSVPSettings = Field(default_factory=RSVPSettings)  # Phase 1C: RSVP toggles for public form
     honeymoon_fund: HoneymoonFund = Field(default_factory=HoneymoonFund)  # Phase 1H: Honeymoon fund section
+    # Bucket 1A — guest engagement public fields
+    live_stream: LiveStreamSettings = Field(default_factory=LiveStreamSettings)
+    song_requests_settings: SongRequestSettings = Field(default_factory=SongRequestSettings)
+    dress_code_settings: DressCodeSettings = Field(default_factory=DressCodeSettings)
     events: List[WeddingEvent]
     media: List[ProfileMedia]
     greetings: List[GreetingResponse]

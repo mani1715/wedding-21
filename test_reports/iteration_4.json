@@ -1,0 +1,68 @@
+{
+  "summary": "Bucket 1A (Song Requests, Check-Ins, Live Stream, Dress Code, Add-to-Calendar) end-to-end tested. Backend: 13/13 active pass, 2 negative-path tests skipped (temp profile factory needs event_type field), 1 FAIL on /api/invite/{slug}/calendar — a route-ordering regression where the catch-all /invite/{slug}/{event_type} intercepts /calendar and returns 400 'Invalid event type'. Frontend: 100% — all required data-testids render on the demo invite, Song Request and Check-In forms submit successfully (POST 200) and update the UI (list entry + success card), the YouTube live-stream iframe embeds the correct dQw4w9WgXcQ video, and the add-to-calendar button has the correct href (although the backend route it points to is currently 400).",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "GET /api/invite/{slug}/calendar",
+        "issue": "REGRESSION — returns 400 'Invalid event type. Must be one of: engagement, haldi, mehendi, marriage, reception'. The route at server.py:6446 is registered AFTER the catch-all '/invite/{slug}/{event_type}' (server.py:4424), so FastAPI dispatches the request to the catch-all instead of the calendar handler. Verified with: curl https://wedding-invite-hub-19.preview.emergentagent.com/api/invite/aarav-and-riya-demo/calendar -> HTTP 400 application/json. Fix: register an alias (or move the existing route) BEFORE line 4424, exactly the same pattern already used for the /songs alias at line 4400.",
+        "priority": "HIGH"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Add to Calendar (download .ics)",
+        "issue": "Frontend button correctly links to /api/invite/aarav-and-riya-demo/calendar, but the backend endpoint currently returns 400 (see backend regression above). Clicking the button will produce a broken .ics download for the user.",
+        "affected_selectors": ["[data-testid=\"add-to-calendar-btn\"]"]
+      }
+    ],
+    "design_issues": []
+  },
+  "verified_features": [
+    "[BACKEND] GET /api/invite/aarav-and-riya-demo includes new fields: live_stream (platform=youtube, embed_enabled=true), song_requests_settings (enabled=true, max_per_guest=3), dress_code_settings, and sections_enabled.{live_stream,live_timeline,song_requests,dress_code,check_in} (all true).",
+    "[BACKEND] POST /api/invite/aarav-and-riya-demo/song-requests with valid payload -> 200 with SongRequestResponse (id, guest_name, song_title, artist, provider_url, created_at).",
+    "[BACKEND] POST song-requests with empty/whitespace song_title -> 422 (Pydantic field_validator).",
+    "[BACKEND] POST song-requests 4th request from same guest_name+phone -> 429 'You have reached the limit of 3 song requests.' (max_per_guest enforced).",
+    "[BACKEND] GET /api/invite/aarav-and-riya-demo/songs (alias) -> 200 List[SongRequestResponse], registered BEFORE catch-all so it works.",
+    "[BACKEND] GET /api/admin/profiles/{profile_id}/song-requests with admin Bearer token -> 200 list; without token -> 401.",
+    "[BACKEND] DELETE /api/admin/song-requests/{request_id} (owner admin) -> {success:true} and the request disappears from the admin list.",
+    "[BACKEND] POST /api/invite/aarav-and-riya-demo/check-in valid -> 200 CheckInResponse; duplicate within 30 min (same guest_name+phone) returns the SAME id (idempotent).",
+    "[BACKEND] POST check-in missing/whitespace guest_name -> 422.",
+    "[BACKEND] GET /api/admin/profiles/{profile_id}/check-ins -> {check_ins:[...], stats:{total_check_ins, per_event:{...}}}; total_check_ins matches list length; auth required (401 without token).",
+    "[FRONTEND] /invite/aarav-and-riya-demo renders data-testid=\"public-invitation\" with opacity transitioning to 1 after the cinematic opening (~3 s).",
+    "[FRONTEND] All required data-testids present & visible after scrolling: section-add-to-calendar, section-dress-code, section-live-stream, section-check-in, section-song-requests, add-to-calendar-btn, song-request-form (with -name, -title, -artist, -url), check-in-form (with -name, -phone), live-stream-embed. section-live-timeline correctly absent (0 events on demo, expected behaviour).",
+    "[FRONTEND] add-to-calendar-btn is an <a href=\"/api/invite/aarav-and-riya-demo/calendar\">.",
+    "[FRONTEND] live-stream-embed wrapper renders an inner <iframe src=\"https://www.youtube.com/embed/dQw4w9WgXcQ?modestbranding=1&rel=0\"> — correct YouTube id from the configured URL.",
+    "[FRONTEND] Submitting song-request-form posts to /api/invite/aarav-and-riya-demo/song-requests (200), shows 'Added to the playlist. Thank you!' message, and the new entry appears inside song-request-list (verified end-to-end with a unique guest name).",
+    "[FRONTEND] Submitting check-in-form posts to /api/invite/aarav-and-riya-demo/check-in (200) and reveals data-testid=\"check-in-success\" with text 'You're checked in.'"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_bucket1a_song_checkin.py",
+    "/app/test_reports/pytest/bucket1a.xml"
+  ],
+  "action_items": [
+    "[HIGH] Fix /api/invite/{slug}/calendar route ordering — either move the @api_router.get('/invite/{slug}/calendar') definition (currently at server.py:6446) to before the catch-all at server.py:4424, OR add an alias right next to the /songs alias (~line 4400). The current handler logic itself is fine; only registration order is wrong.",
+    "[LOW] In /app/backend/tests/test_bucket1a_song_checkin.py the two negative-path tests (TestSongRequests::test_post_song_request_disabled_profile_returns_403 and TestCheckIns::test_check_in_disabled_returns_403) currently SKIP because POST /api/admin/profiles requires an additional 'event_type' field that the test factory doesn't pass. Adjust the factory once the correct minimum payload is documented to convert the SKIPs into real assertions."
+  ],
+  "critical_code_review_comments": [
+    "Route ordering: `/invite/{slug}/{event_type}` at server.py:4424 is a hungry catch-all that intercepts every sibling under /invite/{slug}/.... The /songs alias was correctly placed before it; the same care is needed for ANY future /invite/{slug}/<word> route. Consider either changing event_type to a literal/regex path param or moving every sibling endpoint above this catch-all. Today /calendar (6446) is broken because of this exact issue. Long-term, replace the catch-all with explicit Literal['engagement','haldi','mehendi','marriage','reception'] in the path so unknown sub-paths cleanly fall through to other registered routes.",
+    "models.py SongRequestSettings.max_per_guest is read as `int(settings.get('max_per_guest', 3) or 3)` — fine, but the same defaulting is not applied to other Bucket 1A settings. Consider centralising defaults in the Pydantic model.",
+    "server.py:5473 dup_q for check-in uses `guest_name: payload.guest_name.strip()` raw — for case-insensitive dedupe consider matching on `.lower()` (the `name_key` variable is built but never used). Currently 'Riya' and 'riya' produce two distinct check-ins within the 30-min window."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_bucket1a_song_checkin.py (new — 16 tests, 13 pass, 2 graceful skip, 1 fail-reported)"
+  ],
+  "success_rate": {
+    "backend": "92% (13/14 active pass; 1 fail = /calendar regression; 2 SKIPs are negative-path scaffolding, not product failures)",
+    "frontend": "100% (all 12 requested data-testids verified, both form submissions and YouTube embed verified end-to-end)"
+  },
+  "test_credentials": "admin@wedding.com / admin123 (Bearer token from POST /api/auth/login). Demo slug aarav-and-riya-demo, profile_id 9a06f989-6d6f-49d2-bd0d-df2a00d3cb43.",
+  "seed_data_creation": "Each backend run inserts ~6 TEST_-prefixed song_requests and ~2 TEST_/PW-prefixed check_ins for the demo profile. The admin-delete test cleans up its own row; the others persist (intentional — they exercise the admin list & rate-limit). If clutter becomes an issue, a one-time `db.song_requests.delete_many({guest_name: /^TEST_|^PWGuest/})` will clear them.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Run /app/backend/tests/test_bucket1a_song_checkin.py with REACT_APP_BACKEND_URL exported (the suite intentionally has no fallback URL). The TestCalendarIcs::test_calendar_ics_demo failure is the only real bug — re-run that single test after the main agent moves/aliases the /calendar route, it should flip green immediately. Frontend selectors are stable; the cinematic opening adds ~3 s before public-invitation opacity reaches 1, so wait_for_selector + opacity-polling is required (see the playwright script in this iteration).",
+  "rca of the issue": "REGRESSION RCA — /api/invite/{slug}/calendar: FastAPI matches routes by *registration order*. The Bucket 1A implementation correctly added the /songs alias at server.py:4400, immediately BEFORE the catch-all `/invite/{slug}/{event_type}` at server.py:4424. However the pre-existing /calendar route at server.py:6446 was never moved or aliased, so the catch-all swallows it first and rejects 'calendar' as an invalid event_type with HTTP 400. Reproduction: `curl -i https://wedding-invite-hub-19.preview.emergentagent.com/api/invite/aarav-and-riya-demo/calendar` -> `400 {\"detail\":\"Invalid event type. Must be one of: engagement, haldi, mehendi, marriage, reception\"}`. Mitigation: add `@api_router.get('/invite/{slug}/calendar') ...` (or just move the existing definition) above line 4424, mirroring the /songs alias pattern. No data or business logic change required."
+}

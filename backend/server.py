@@ -48,6 +48,9 @@ from models import (
     Greeting, GreetingCreate, GreetingResponse,
     InvitationPublicView, SectionsEnabled, BackgroundMusic, MapSettings, ContactInfo,
     RSVPSettings, HoneymoonFund,
+    LiveStreamSettings, SongRequestSettings, DressCodeSettings, DressCodeItem,
+    SongRequest, SongRequestCreate, SongRequestResponse,
+    CheckIn, CheckInCreate, CheckInResponse, CheckInStats,
     GuestRoom, PreWeddingLink,
     WeddingEvent, EventType,
     EventInvitation, EventInvitationCreate, EventInvitationUpdate, EventInvitationResponse,
@@ -4019,6 +4022,9 @@ async def _build_invitation_public_view(profile: dict) -> "InvitationPublicView"
         contact_info=ContactInfo(**profile.get('contact_info', {})),
         rsvp_settings=RSVPSettings(**(profile.get('rsvp_settings') or {})),
         honeymoon_fund=HoneymoonFund(**(profile.get('honeymoon_fund') or {})),
+        live_stream=LiveStreamSettings(**(profile.get('live_stream') or {})),
+        song_requests_settings=SongRequestSettings(**(profile.get('song_requests_settings') or {})),
+        dress_code_settings=DressCodeSettings(**(profile.get('dress_code_settings') or {})),
         events=[WeddingEvent(**e) for e in profile.get('events', [])],
         media=[ProfileMedia(**m) for m in media_list],
         greetings=[GreetingResponse(**g) for g in greetings_list],
@@ -4391,6 +4397,30 @@ async def room_lookup_v2(slug: str, name: str = ""):
     return {"count": len(matches), "matches": matches}
 
 
+@api_router.get("/invite/{slug}/songs", response_model=List[SongRequestResponse])
+async def list_song_requests_public_alias(slug: str, limit: int = 30):
+    """Public alias for song requests list (avoids catch-all event_type route)."""
+    profile = await db.profiles.find_one({"slug": slug}, {"_id": 0})
+    if not profile:
+        raise HTTPException(status_code=404, detail="Invitation not found")
+    settings = (profile.get('song_requests_settings') or {})
+    if not settings.get('enabled', False):
+        return []
+    rows = await db.song_requests.find(
+        {"profile_id": profile['id']}, {"_id": 0}
+    ).sort("created_at", -1).limit(max(1, min(int(limit or 30), 100))).to_list(100)
+    out = []
+    for r in rows:
+        if isinstance(r.get('created_at'), str):
+            r['created_at'] = datetime.fromisoformat(r['created_at'])
+        out.append(SongRequestResponse(
+            id=r['id'], guest_name=r.get('guest_name', ''), song_title=r.get('song_title', ''),
+            artist=r.get('artist'), provider_url=r.get('provider_url'), message=r.get('message'),
+            created_at=r['created_at'],
+        ))
+    return out
+
+
 @api_router.get("/invite/{slug}/{event_type}", response_model=InvitationPublicView)
 async def get_event_invitation(slug: str, event_type: str):
     """Get public invitation for specific event
@@ -4532,6 +4562,9 @@ async def get_event_invitation(slug: str, event_type: str):
         contact_info=ContactInfo(**profile.get('contact_info', {})),
         rsvp_settings=RSVPSettings(**(profile.get('rsvp_settings') or {})),
         honeymoon_fund=HoneymoonFund(**(profile.get('honeymoon_fund') or {})),
+        live_stream=LiveStreamSettings(**(profile.get('live_stream') or {})),
+        song_requests_settings=SongRequestSettings(**(profile.get('song_requests_settings') or {})),
+        dress_code_settings=DressCodeSettings(**(profile.get('dress_code_settings') or {})),
         events=filtered_events,  # Show matching events
         media=[ProfileMedia(**m) for m in media_list],
         greetings=[GreetingResponse(**g) for g in greetings_list],
@@ -4664,6 +4697,9 @@ async def get_event_by_slug(slug: str, event_slug: str):
         contact_info=ContactInfo(**profile.get('contact_info', {})),
         rsvp_settings=RSVPSettings(**(profile.get('rsvp_settings') or {})),
         honeymoon_fund=HoneymoonFund(**(profile.get('honeymoon_fund') or {})),
+        live_stream=LiveStreamSettings(**(profile.get('live_stream') or {})),
+        song_requests_settings=SongRequestSettings(**(profile.get('song_requests_settings') or {})),
+        dress_code_settings=DressCodeSettings(**(profile.get('dress_code_settings') or {})),
         events=filtered_events,
         media=[ProfileMedia(**m) for m in media_list],
         greetings=[GreetingResponse(**g) for g in greetings_list],
@@ -5284,6 +5320,226 @@ async def export_rsvps_csv(profile_id: str, admin_id: str = Depends(get_current_
             "Content-Disposition": f"attachment; filename=rsvps_{profile_id}.csv"
         }
     )
+
+
+# ============================================================================
+# BUCKET 1A — Song Requests & Guest Check-Ins
+# ============================================================================
+
+@api_router.post("/invite/{slug}/song-requests", response_model=SongRequestResponse)
+async def submit_song_request(slug: str, payload: SongRequestCreate):
+    """Public endpoint — guest submits a song suggestion."""
+    profile = await db.profiles.find_one({"slug": slug}, {"_id": 0})
+    if not profile:
+        raise HTTPException(status_code=404, detail="Invitation not found")
+    if not await check_profile_active(profile):
+        raise HTTPException(status_code=410, detail="This invitation link has expired")
+
+    settings = (profile.get('song_requests_settings') or {})
+    if not settings.get('enabled', False):
+        raise HTTPException(status_code=403, detail="Song requests are not enabled for this invitation")
+
+    max_per_guest = int(settings.get('max_per_guest', 3) or 3)
+
+    # Per-guest limit (by name + phone)
+    query = {"profile_id": profile['id'], "guest_name": payload.guest_name.strip()}
+    if payload.guest_phone:
+        query["guest_phone"] = payload.guest_phone
+    existing = await db.song_requests.count_documents(query)
+    if existing >= max_per_guest:
+        raise HTTPException(
+            status_code=429,
+            detail=f"You have reached the limit of {max_per_guest} song requests."
+        )
+
+    sr = SongRequest(
+        profile_id=profile['id'],
+        guest_name=payload.guest_name,
+        guest_phone=payload.guest_phone,
+        song_title=payload.song_title,
+        artist=payload.artist,
+        provider_url=payload.provider_url,
+        message=payload.message,
+    )
+    await db.song_requests.insert_one(sr.model_dump())
+    return SongRequestResponse(
+        id=sr.id,
+        guest_name=sr.guest_name,
+        song_title=sr.song_title,
+        artist=sr.artist,
+        provider_url=sr.provider_url,
+        message=sr.message,
+        created_at=sr.created_at,
+    )
+
+
+@api_router.get("/invite/{slug}/song-requests", response_model=List[SongRequestResponse])
+async def list_song_requests_public(slug: str, limit: int = 30):
+    """Public endpoint — list recent song requests (no PII)."""
+    profile = await db.profiles.find_one({"slug": slug}, {"_id": 0})
+    if not profile:
+        raise HTTPException(status_code=404, detail="Invitation not found")
+
+    settings = (profile.get('song_requests_settings') or {})
+    if not settings.get('enabled', False):
+        return []
+
+    rows = await db.song_requests.find(
+        {"profile_id": profile['id']}, {"_id": 0}
+    ).sort("created_at", -1).limit(max(1, min(int(limit or 30), 100))).to_list(100)
+
+    out: List[SongRequestResponse] = []
+    for r in rows:
+        if isinstance(r.get('created_at'), str):
+            r['created_at'] = datetime.fromisoformat(r['created_at'])
+        out.append(SongRequestResponse(
+            id=r['id'],
+            guest_name=r.get('guest_name', ''),
+            song_title=r.get('song_title', ''),
+            artist=r.get('artist'),
+            provider_url=r.get('provider_url'),
+            message=r.get('message'),
+            created_at=r['created_at'],
+        ))
+    return out
+
+
+@api_router.get("/admin/profiles/{profile_id}/song-requests", response_model=List[SongRequestResponse])
+async def admin_list_song_requests(profile_id: str, admin_id: str = Depends(get_current_admin)):
+    """Admin endpoint — list all song requests for a profile."""
+    # Ownership check (admin must own profile)
+    profile = await db.profiles.find_one({"id": profile_id, "admin_id": admin_id}, {"_id": 0})
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    rows = await db.song_requests.find(
+        {"profile_id": profile_id}, {"_id": 0}
+    ).sort("created_at", -1).to_list(500)
+
+    out = []
+    for r in rows:
+        if isinstance(r.get('created_at'), str):
+            r['created_at'] = datetime.fromisoformat(r['created_at'])
+        out.append(SongRequestResponse(
+            id=r['id'],
+            guest_name=r.get('guest_name', ''),
+            song_title=r.get('song_title', ''),
+            artist=r.get('artist'),
+            provider_url=r.get('provider_url'),
+            message=r.get('message'),
+            created_at=r['created_at'],
+        ))
+    return out
+
+
+@api_router.delete("/admin/song-requests/{request_id}")
+async def admin_delete_song_request(request_id: str, admin_id: str = Depends(get_current_admin)):
+    """Admin endpoint — delete a song request (owner-only)."""
+    sr = await db.song_requests.find_one({"id": request_id}, {"_id": 0})
+    if not sr:
+        raise HTTPException(status_code=404, detail="Song request not found")
+
+    profile = await db.profiles.find_one({"id": sr.get('profile_id'), "admin_id": admin_id}, {"_id": 0})
+    if not profile:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this song request")
+
+    await db.song_requests.delete_one({"id": request_id})
+    return {"success": True}
+
+
+@api_router.post("/invite/{slug}/check-in", response_model=CheckInResponse)
+async def guest_check_in(slug: str, payload: CheckInCreate):
+    """Public endpoint — guest checks in at the venue/event."""
+    profile = await db.profiles.find_one({"slug": slug}, {"_id": 0})
+    if not profile:
+        raise HTTPException(status_code=404, detail="Invitation not found")
+    if not await check_profile_active(profile):
+        raise HTTPException(status_code=410, detail="This invitation link has expired")
+
+    sections = profile.get('sections_enabled', {}) or {}
+    if not sections.get('check_in', False):
+        raise HTTPException(status_code=403, detail="Check-in is not enabled for this invitation")
+
+    # Validate event_id (if provided) belongs to this profile
+    event_id = payload.event_id
+    if event_id:
+        events = profile.get('events', []) or []
+        if not any((e.get('event_id') == event_id) for e in events):
+            raise HTTPException(status_code=400, detail="Invalid event_id")
+
+    # Prevent rapid duplicates (same guest_name + phone + event within 30 min)
+    name_key = payload.guest_name.strip().lower()
+    cutoff = datetime.now(timezone.utc) - timedelta(minutes=30)
+    dup_q: Dict[str, Any] = {"profile_id": profile['id'], "guest_name": payload.guest_name.strip()}
+    if event_id:
+        dup_q["event_id"] = event_id
+    if payload.guest_phone:
+        dup_q["guest_phone"] = payload.guest_phone
+    recent = await db.check_ins.find(dup_q, {"_id": 0}).sort("created_at", -1).limit(1).to_list(1)
+    if recent:
+        ts = recent[0].get('created_at')
+        if isinstance(ts, str):
+            ts = datetime.fromisoformat(ts)
+        if ts and ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        if ts and ts > cutoff:
+            return CheckInResponse(
+                id=recent[0]['id'],
+                guest_name=recent[0]['guest_name'],
+                event_id=recent[0].get('event_id'),
+                created_at=ts,
+            )
+
+    ci = CheckIn(
+        profile_id=profile['id'],
+        event_id=event_id,
+        guest_name=payload.guest_name,
+        guest_phone=payload.guest_phone,
+        note=payload.note,
+        source=(payload.source or "web"),
+    )
+    await db.check_ins.insert_one(ci.model_dump())
+    return CheckInResponse(
+        id=ci.id,
+        guest_name=ci.guest_name,
+        event_id=ci.event_id,
+        created_at=ci.created_at,
+    )
+
+
+@api_router.get("/admin/profiles/{profile_id}/check-ins")
+async def admin_list_check_ins(profile_id: str, admin_id: str = Depends(get_current_admin)):
+    """Admin endpoint — list check-ins + per-event stats."""
+    profile = await db.profiles.find_one({"id": profile_id, "admin_id": admin_id}, {"_id": 0})
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    rows = await db.check_ins.find(
+        {"profile_id": profile_id}, {"_id": 0}
+    ).sort("created_at", -1).to_list(1000)
+
+    per_event: Dict[str, int] = {}
+    for r in rows:
+        key = r.get('event_id') or "_general"
+        per_event[key] = per_event.get(key, 0) + 1
+
+    # Coerce timestamps
+    for r in rows:
+        if isinstance(r.get('created_at'), str):
+            r['created_at'] = datetime.fromisoformat(r['created_at'])
+
+    return {
+        "check_ins": rows,
+        "stats": {
+            "total_check_ins": len(rows),
+            "per_event": per_event,
+        }
+    }
+
+
+# ============================================================================
+# END Bucket 1A routes
+# ============================================================================
 
 
 # ==================== ANALYTICS ROUTES (PHASE 9 - ENHANCED) ====================
