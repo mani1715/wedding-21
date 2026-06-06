@@ -55,19 +55,6 @@
     "width": 735,
     "height": 1030
   },
-  "/designs/all/Beach/Haldi/2dab3834060514adb28252a595357750.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Beach/Haldi/2dab3834060514adb28252a595357750-480.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Beach/Haldi/2dab3834060514adb28252a595357750-480.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRnoAAABXRUJQVlA4IG4AAABwBACdASoYACEAPvVqpk6qsKMiNVQMAhAeiUAQcCHrXb76opMQ7pNw5qDagAD+6sYodp6Upj9U7f7fN4rwLJRijYho8JpBgt5+b3ACXw+kWH/fZQA2C6NZQyS+rh6UahwAbpJtdlCrSFUCVgAAAA==",
-    "dominant": "#e8d8d8",
-    "width": 736,
-    "height": 1030
-  },
   "/designs/all/Beach/Haldi/download.jpg": {
     "avif": {},
     "webp": {
@@ -541,40 +528,6 @@
     "width": 2560,
     "height": 3488
   },
-  "/designs/all/Bengali/Haldi/Haldi invitation card.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Bengali/Haldi/Haldi invitation card-480.webp",
-      "960": "/designs/opt/Bengali/Haldi/Haldi invitation card-960.webp",
-      "1440": "/designs/opt/Bengali/Haldi/Haldi invitation card-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Bengali/Haldi/Haldi invitation card-480.jpg",
-      "960": "/designs/opt/Bengali/Haldi/Haldi invitation card-960.jpg",
-      "1440": "/designs/opt/Bengali/Haldi/Haldi invitation card-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRhIBAABXRUJQVlA4IAYBAADwBwCdASoYACIAPwFsrVIrJaOiqrgMAWAgCWYAtSFBVL5ALQHMZniDLEunBAQKgEakJvu8ZNbviGSIiLTFkiSyNoa9Vl5eQsAA/tUTFWq6f1pEVHjR4yInlJaLNfL7gGNkjjgoLEOrOFRhnDI0+sO/CAAOE7UuDSPa7f+LW63VjWQVlUxP5FqzQeBmffr018DK2AONPitpvBYPobxhGOtrZhfh1YXrQ0VEb3cgvVluwSduoKloBluEuDkzgpS9jv/y+7c54GvFaMy9u0/Hbl+f37IfwdfDWrzqBrzCM45N8cAL99AGfRJsNJCsTRxTxGxXZl/GPojL15vYohrwGHpxVs81xwAA",
-    "dominant": "#f8f8e8",
-    "width": 2560,
-    "height": 3582
-  },
-  "/designs/all/Bengali/Haldi/Haldi.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Bengali/Haldi/Haldi-480.webp",
-      "960": "/designs/opt/Bengali/Haldi/Haldi-960.webp",
-      "1440": "/designs/opt/Bengali/Haldi/Haldi-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Bengali/Haldi/Haldi-480.jpg",
-      "960": "/designs/opt/Bengali/Haldi/Haldi-960.jpg",
-      "1440": "/designs/opt/Bengali/Haldi/Haldi-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRuIAAABXRUJQVlA4INYAAABQBgCdASoYACsAPwFurU8rJqQiKrgN+WAgCWIAtQlgyf6miHlRbMfG8V0DNiaVe8IwTVpmepicBYu2QAD+8YIxI8wlkDeubhKxxhm1frJv6rnCV5dnIEnMalMeh0QUxJGJvrRchoOBrgwW+NxG9Bn0ZsdfvSKy6FsxJLGBQLYTf2+v1TnPD9OGB65pc9v8iUi0GkNxPDD1MMQE+Oa+Ccq+FlY2v88wgL/lCLyGoZNMiiy5vZCj7PKCnvGtEl+kUvqwZP4YKSL5G9CHY8nG63drEyetlAAA",
-    "dominant": "#e8e8d8",
-    "width": 2560,
-    "height": 4549
-  },
   "/designs/all/Bengali/Haldi/download.jpg": {
     "avif": {},
     "webp": {
@@ -877,23 +830,6 @@
     "width": 2560,
     "height": 4480
   },
-  "/designs/all/Christian/Haldi/Haldi vibes Layout.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Christian/Haldi/Haldi vibes Layout-480.webp",
-      "960": "/designs/opt/Christian/Haldi/Haldi vibes Layout-960.webp",
-      "1440": "/designs/opt/Christian/Haldi/Haldi vibes Layout-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Christian/Haldi/Haldi vibes Layout-480.jpg",
-      "960": "/designs/opt/Christian/Haldi/Haldi vibes Layout-960.jpg",
-      "1440": "/designs/opt/Christian/Haldi/Haldi vibes Layout-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRjIBAABXRUJQVlA4ICYBAAAwBwCdASoYACsAPulcqE6pJSQiNVv8ASAdCWoAnTMpgfhKmfBnyMjRf+Klc9DmRjvmn3HhVgV8i3Pe/cBoXorvzgAA/t/RLgoEfB/FfVsNxnvprkc1g9nay4zNPDZDMAB7YWJP0lwOiC8PDnW3dpsT4M98RNnxfF041mYEt9MHbepkvyFDfoi5iOA7vbaYvoS4rK0A5CC+WdgHJ/fWgdhvIgu2xO7FTDAklFfOgXjn3xBijALKwc1CsqsSDzH6PZmxAbiKjnWd8O69YWiP2CKeb/WbJR01Ea39qat8o32ROEVgCLyWJPDVw0dp1+xxtXbVQ/4VqPflp57AcU06QrDs+Lkxt8VGlHzgfwA+sJp4bDVoLRunKDqPW/lGIaElr7Pcyph8+AA=",
-    "dominant": "#f8f8e8",
-    "width": 2560,
-    "height": 4552
-  },
   "/designs/all/Christian/Haldi/christian-haldi-clean-1.png": {
     "avif": {},
     "webp": {
@@ -919,23 +855,6 @@
     "dominant": "#f8d8c8",
     "width": 768,
     "height": 1365
-  },
-  "/designs/all/Christian/Haldi/download.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Christian/Haldi/download-480.webp",
-      "960": "/designs/opt/Christian/Haldi/download-960.webp",
-      "1440": "/designs/opt/Christian/Haldi/download-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Christian/Haldi/download-480.jpg",
-      "960": "/designs/opt/Christian/Haldi/download-960.jpg",
-      "1440": "/designs/opt/Christian/Haldi/download-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRiYBAABXRUJQVlA4IBoBAABwBwCdASoYACsAPwFwrFKrJiOiqrgMAWAgCWwAsR8cip+p8WhF3Ud4nnUuWhKlp1w2Cvt+/yzassdpNElyCl8R9PSAAAD+kMXS+N+uTko5dsM1+BxDMBGaz8b+StmYinez61C6SmZri/uaAcfYB0ffFztK96dWDDVr4dYXhp6FnmHP+aKrnFwZT12FCoDn2J56OBLUhA7qnaRc9bRKlUWWz8WMBozVJRCjNKtPLTvFnHDvvfHWxxyNglXCXSYaVyPrD9TJcSrkVvkJ/II3hsNLWLmLXXzUxQUiXT1J8t2SA+Nmww6Wm66+whKZDwhN9ZkNH+34VWnyKAx/g9Vz88Dr8GP6GNIe96XRY9b4tq22O+6vcxGV2IgAAAA=",
-    "dominant": "#f8f8e8",
-    "width": 2560,
-    "height": 4549
   },
   "/designs/all/Christian/Marriage/Invite Template.jpg": {
     "avif": {},
@@ -1039,7 +958,7 @@
     "width": 2560,
     "height": 4549
   },
-  "/designs/all/Christian/Reception/Um Save the Date personalizado e ilustrado, que reflete o ar elegante e romântico desse casamento 🤍__#savethedatecasamento #identidadevisualcasamento.jpg": {
+  "/designs/all/Christian/Reception/Um Save the Date personalizado e ilustrado, que reflete o ar elegante e rom\u00e2ntico desse casamento \ud83e\udd0d__#savethedatecasamento #identidadevisualcasamento.jpg": {
     "avif": {},
     "webp": {
       "480": "/designs/opt/Christian/Reception/Um_Save_the_Date_personalizado_e_ilustrado__que_re-56fc00a348-480.webp",
@@ -1056,17 +975,17 @@
     "width": 2560,
     "height": 3200
   },
-  "/designs/all/Christian/Reception/Your love story deserves an invite as special as your big day ✨.jpg": {
+  "/designs/all/Christian/Reception/Your love story deserves an invite as special as your big day \u2728.jpg": {
     "avif": {},
     "webp": {
-      "480": "/designs/opt/Christian/Reception/Your love story deserves an invite as special as your big day ✨-480.webp",
-      "960": "/designs/opt/Christian/Reception/Your love story deserves an invite as special as your big day ✨-960.webp",
-      "1440": "/designs/opt/Christian/Reception/Your love story deserves an invite as special as your big day ✨-1440.webp"
+      "480": "/designs/opt/Christian/Reception/Your love story deserves an invite as special as your big day \u2728-480.webp",
+      "960": "/designs/opt/Christian/Reception/Your love story deserves an invite as special as your big day \u2728-960.webp",
+      "1440": "/designs/opt/Christian/Reception/Your love story deserves an invite as special as your big day \u2728-1440.webp"
     },
     "jpg": {
-      "480": "/designs/opt/Christian/Reception/Your love story deserves an invite as special as your big day ✨-480.jpg",
-      "960": "/designs/opt/Christian/Reception/Your love story deserves an invite as special as your big day ✨-960.jpg",
-      "1440": "/designs/opt/Christian/Reception/Your love story deserves an invite as special as your big day ✨-1440.jpg"
+      "480": "/designs/opt/Christian/Reception/Your love story deserves an invite as special as your big day \u2728-480.jpg",
+      "960": "/designs/opt/Christian/Reception/Your love story deserves an invite as special as your big day \u2728-960.jpg",
+      "1440": "/designs/opt/Christian/Reception/Your love story deserves an invite as special as your big day \u2728-1440.jpg"
     },
     "lqip": "data:image/webp;base64,UklGRtwAAABXRUJQVlA4INAAAAAwBgCdASoYACIAPwF2s1SrJqQjJWmZYCAJYwAu/8FMsL9ad6ebF8fZVsMkwXFAi/XWZNThWVqEM5SAAP75aevnmYjjfSY+OLWc8X6SotJrWC5g98C6ALOYuGitA1FTu3M/UT1QHsaErhm/ZTjxB0LZ0ztQI++SGWEsf/gIqHH3Hq7q7gcFuTHGg7pEFZPzeS4tA5LZrPWtFRZRW6WbytC/ZtD1WP/L83yDCBvyRP0X3oyuaxC0GOlGSP7dqy75weFnaQSzVxzDlPyZDYBvYAAA",
     "dominant": "#f8f8f8",
@@ -1128,23 +1047,6 @@
     "dominant": "#f8f8e8",
     "width": 2560,
     "height": 3584
-  },
-  "/designs/all/Christian/Sangeeth/Editable Pink Mehndi Welcome Sign & Invitation _ 2 in 1 Sangeet Dholki Canva Template Bundle.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Christian/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-480.webp",
-      "960": "/designs/opt/Christian/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-960.webp",
-      "1440": "/designs/opt/Christian/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Christian/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-480.jpg",
-      "960": "/designs/opt/Christian/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-960.jpg",
-      "1440": "/designs/opt/Christian/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRggBAABXRUJQVlA4IPwAAACwBgCdASoYACIAPwFwr1MrJaQiqrgKAWAgCWYAtvfxwoMDrb/AH1iv9QylpCajZ4BYioe0MpGRzWc0wMHMIAD+nqLX8dkXw7BesESJ5JIjdw5Sc+vG2Vajkhm2+HAVK5vby/C/AYyx7Kjuyev+wxSir14Lfu3pGRnG5wPR3H/k03nBfsIenan8UFNVXyY4jbSsTcBrCxFewDi0Ic2SBuuveyv0WXW+T0WLtGaRkmtuNcdS/F8azcDTCJY5Z32CZJqJHUoFHNPvATDYujbDg/D7fz6C9XgQc/CLdpUhjnzgFMjZPNopEruQgDDUd2y1TK3Q8ez/Tn3DsmtQAAA=",
-    "dominant": "#b83848",
-    "width": 2560,
-    "height": 3582
   },
   "/designs/all/Christian/Sangeeth/christian-sangeet-clean-1.png": {
     "avif": {},
@@ -1210,23 +1112,6 @@
     "width": 2560,
     "height": 4549
   },
-  "/designs/all/Kerala_Backwaters/Engagement/download (2).jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Kerala_Backwaters/Engagement/download (2)-480.webp",
-      "960": "/designs/opt/Kerala_Backwaters/Engagement/download (2)-960.webp",
-      "1440": "/designs/opt/Kerala_Backwaters/Engagement/download (2)-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Kerala_Backwaters/Engagement/download (2)-480.jpg",
-      "960": "/designs/opt/Kerala_Backwaters/Engagement/download (2)-960.jpg",
-      "1440": "/designs/opt/Kerala_Backwaters/Engagement/download (2)-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRiABAABXRUJQVlA4IBQBAABQBwCdASoYACIAPwFusFMrJaQiqrgKAWAgCWIAsQ1Gw9I1/P1Y5Eyvs6VdTPtoW6aBTEKozXBoPkVagq22R16HCewAAM3QRqs8a/VxpN5iTdYaREgE9Y4aF5ToNhixlm+nNKJC34+htQDUIWu3iyrnQwJkOkizsHPVEfNDKRkwPYSrMicv3Pdhyv7rGKYKNt70rfdP4jATSmF1fcHYBe4vpm74D26km/hm3yW26mfbEF4TjRHZ9xmljzpAZp4HijesyBc19viJ9CryDm+FgjaP9z4bScmoFyomJhvAlWuCIivCdR/81+6b6AsyILBAOM3bmT8ZXf6s+N/oxnF8foZV2fH+TrF0kaU8UlB8+16sOuNAAAA=",
-    "dominant": "#f8f8e8",
-    "width": 2560,
-    "height": 3669
-  },
   "/designs/all/Kerala_Backwaters/Engagement/download (4).jpg": {
     "avif": {},
     "webp": {
@@ -1286,40 +1171,6 @@
     "dominant": "#f8f8f8",
     "width": 2560,
     "height": 4480
-  },
-  "/designs/all/Kerala_Backwaters/Haldi/Haldi vibes Layout.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Kerala_Backwaters/Haldi/Haldi vibes Layout-480.webp",
-      "960": "/designs/opt/Kerala_Backwaters/Haldi/Haldi vibes Layout-960.webp",
-      "1440": "/designs/opt/Kerala_Backwaters/Haldi/Haldi vibes Layout-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Kerala_Backwaters/Haldi/Haldi vibes Layout-480.jpg",
-      "960": "/designs/opt/Kerala_Backwaters/Haldi/Haldi vibes Layout-960.jpg",
-      "1440": "/designs/opt/Kerala_Backwaters/Haldi/Haldi vibes Layout-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRjIBAABXRUJQVlA4ICYBAAAwBwCdASoYACsAPulcqE6pJSQiNVv8ASAdCWoAnTMpgfhKmfBnyMjRf+Klc9DmRjvmn3HhVgV8i3Pe/cBoXorvzgAA/t/RLgoEfB/FfVsNxnvprkc1g9nay4zNPDZDMAB7YWJP0lwOiC8PDnW3dpsT4M98RNnxfF041mYEt9MHbepkvyFDfoi5iOA7vbaYvoS4rK0A5CC+WdgHJ/fWgdhvIgu2xO7FTDAklFfOgXjn3xBijALKwc1CsqsSDzH6PZmxAbiKjnWd8O69YWiP2CKeb/WbJR01Ea39qat8o32ROEVgCLyWJPDVw0dp1+xxtXbVQ/4VqPflp57AcU06QrDs+Lkxt8VGlHzgfwA+sJp4bDVoLRunKDqPW/lGIaElr7Pcyph8+AA=",
-    "dominant": "#f8f8e8",
-    "width": 2560,
-    "height": 4552
-  },
-  "/designs/all/Kerala_Backwaters/Haldi/download.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Kerala_Backwaters/Haldi/download-480.webp",
-      "960": "/designs/opt/Kerala_Backwaters/Haldi/download-960.webp",
-      "1440": "/designs/opt/Kerala_Backwaters/Haldi/download-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Kerala_Backwaters/Haldi/download-480.jpg",
-      "960": "/designs/opt/Kerala_Backwaters/Haldi/download-960.jpg",
-      "1440": "/designs/opt/Kerala_Backwaters/Haldi/download-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRiYBAABXRUJQVlA4IBoBAABwBwCdASoYACsAPwFwrFKrJiOiqrgMAWAgCWwAsR8cip+p8WhF3Ud4nnUuWhKlp1w2Cvt+/yzassdpNElyCl8R9PSAAAD+kMXS+N+uTko5dsM1+BxDMBGaz8b+StmYinez61C6SmZri/uaAcfYB0ffFztK96dWDDVr4dYXhp6FnmHP+aKrnFwZT12FCoDn2J56OBLUhA7qnaRc9bRKlUWWz8WMBozVJRCjNKtPLTvFnHDvvfHWxxyNglXCXSYaVyPrD9TJcSrkVvkJ/II3hsNLWLmLXXzUxQUiXT1J8t2SA+Nmww6Wm66+whKZDwhN9ZkNH+34VWnyKAx/g9Vz88Dr8GP6GNIe96XRY9b4tq22O+6vcxGV2IgAAAA=",
-    "dominant": "#f8f8e8",
-    "width": 2560,
-    "height": 4549
   },
   "/designs/all/Kerala_Backwaters/Haldi/kerala-haldi-clean-1.png": {
     "avif": {},
@@ -1513,23 +1364,6 @@
     "width": 675,
     "height": 1200
   },
-  "/designs/all/Kerala_Backwaters/Sangeeth/Editable Pink Mehndi Welcome Sign & Invitation _ 2 in 1 Sangeet Dholki Canva Template Bundle.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Kerala_Backwaters/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-480.webp",
-      "960": "/designs/opt/Kerala_Backwaters/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-960.webp",
-      "1440": "/designs/opt/Kerala_Backwaters/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Kerala_Backwaters/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-480.jpg",
-      "960": "/designs/opt/Kerala_Backwaters/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-960.jpg",
-      "1440": "/designs/opt/Kerala_Backwaters/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRggBAABXRUJQVlA4IPwAAACwBgCdASoYACIAPwFwr1MrJaQiqrgKAWAgCWYAtvfxwoMDrb/AH1iv9QylpCajZ4BYioe0MpGRzWc0wMHMIAD+nqLX8dkXw7BesESJ5JIjdw5Sc+vG2Vajkhm2+HAVK5vby/C/AYyx7Kjuyev+wxSir14Lfu3pGRnG5wPR3H/k03nBfsIenan8UFNVXyY4jbSsTcBrCxFewDi0Ic2SBuuveyv0WXW+T0WLtGaRkmtuNcdS/F8azcDTCJY5Z32CZJqJHUoFHNPvATDYujbDg/D7fz6C9XgQc/CLdpUhjnzgFMjZPNopEruQgDDUd2y1TK3Q8ez/Tn3DsmtQAAA=",
-    "dominant": "#b83848",
-    "width": 2560,
-    "height": 3582
-  },
   "/designs/all/Kerala_Backwaters/Sangeeth/download (1).jpg": {
     "avif": {},
     "webp": {
@@ -1631,40 +1465,6 @@
     "dominant": "#f8f8f8",
     "width": 2560,
     "height": 4480
-  },
-  "/designs/all/Minimal/Haldi/Haldi vibes Layout.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Minimal/Haldi/Haldi vibes Layout-480.webp",
-      "960": "/designs/opt/Minimal/Haldi/Haldi vibes Layout-960.webp",
-      "1440": "/designs/opt/Minimal/Haldi/Haldi vibes Layout-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Minimal/Haldi/Haldi vibes Layout-480.jpg",
-      "960": "/designs/opt/Minimal/Haldi/Haldi vibes Layout-960.jpg",
-      "1440": "/designs/opt/Minimal/Haldi/Haldi vibes Layout-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRjIBAABXRUJQVlA4ICYBAAAwBwCdASoYACsAPulcqE6pJSQiNVv8ASAdCWoAnTMpgfhKmfBnyMjRf+Klc9DmRjvmn3HhVgV8i3Pe/cBoXorvzgAA/t/RLgoEfB/FfVsNxnvprkc1g9nay4zNPDZDMAB7YWJP0lwOiC8PDnW3dpsT4M98RNnxfF041mYEt9MHbepkvyFDfoi5iOA7vbaYvoS4rK0A5CC+WdgHJ/fWgdhvIgu2xO7FTDAklFfOgXjn3xBijALKwc1CsqsSDzH6PZmxAbiKjnWd8O69YWiP2CKeb/WbJR01Ea39qat8o32ROEVgCLyWJPDVw0dp1+xxtXbVQ/4VqPflp57AcU06QrDs+Lkxt8VGlHzgfwA+sJp4bDVoLRunKDqPW/lGIaElr7Pcyph8+AA=",
-    "dominant": "#f8f8e8",
-    "width": 2560,
-    "height": 4552
-  },
-  "/designs/all/Minimal/Haldi/download.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Minimal/Haldi/download-480.webp",
-      "960": "/designs/opt/Minimal/Haldi/download-960.webp",
-      "1440": "/designs/opt/Minimal/Haldi/download-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Minimal/Haldi/download-480.jpg",
-      "960": "/designs/opt/Minimal/Haldi/download-960.jpg",
-      "1440": "/designs/opt/Minimal/Haldi/download-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRiYBAABXRUJQVlA4IBoBAABwBwCdASoYACsAPwFwrFKrJiOiqrgMAWAgCWwAsR8cip+p8WhF3Ud4nnUuWhKlp1w2Cvt+/yzassdpNElyCl8R9PSAAAD+kMXS+N+uTko5dsM1+BxDMBGaz8b+StmYinez61C6SmZri/uaAcfYB0ffFztK96dWDDVr4dYXhp6FnmHP+aKrnFwZT12FCoDn2J56OBLUhA7qnaRc9bRKlUWWz8WMBozVJRCjNKtPLTvFnHDvvfHWxxyNglXCXSYaVyPrD9TJcSrkVvkJ/II3hsNLWLmLXXzUxQUiXT1J8t2SA+Nmww6Wm66+whKZDwhN9ZkNH+34VWnyKAx/g9Vz88Dr8GP6GNIe96XRY9b4tq22O+6vcxGV2IgAAAA=",
-    "dominant": "#f8f8e8",
-    "width": 2560,
-    "height": 4549
   },
   "/designs/all/Minimal/Marriage/IMG-20260518-WA0030.jpg": {
     "avif": {},
@@ -1815,23 +1615,6 @@
     "width": 735,
     "height": 1042
   },
-  "/designs/all/Minimal/Sangeeth/Editable Pink Mehndi Welcome Sign & Invitation _ 2 in 1 Sangeet Dholki Canva Template Bundle.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Minimal/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-480.webp",
-      "960": "/designs/opt/Minimal/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-960.webp",
-      "1440": "/designs/opt/Minimal/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Minimal/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-480.jpg",
-      "960": "/designs/opt/Minimal/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-960.jpg",
-      "1440": "/designs/opt/Minimal/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRggBAABXRUJQVlA4IPwAAACwBgCdASoYACIAPwFwr1MrJaQiqrgKAWAgCWYAtvfxwoMDrb/AH1iv9QylpCajZ4BYioe0MpGRzWc0wMHMIAD+nqLX8dkXw7BesESJ5JIjdw5Sc+vG2Vajkhm2+HAVK5vby/C/AYyx7Kjuyev+wxSir14Lfu3pGRnG5wPR3H/k03nBfsIenan8UFNVXyY4jbSsTcBrCxFewDi0Ic2SBuuveyv0WXW+T0WLtGaRkmtuNcdS/F8azcDTCJY5Z32CZJqJHUoFHNPvATDYujbDg/D7fz6C9XgQc/CLdpUhjnzgFMjZPNopEruQgDDUd2y1TK3Q8ez/Tn3DsmtQAAA=",
-    "dominant": "#b83848",
-    "width": 2560,
-    "height": 3582
-  },
   "/designs/all/Minimal/Sangeeth/download (1).jpg": {
     "avif": {},
     "webp": {
@@ -1883,7 +1666,7 @@
     "width": 2560,
     "height": 3840
   },
-  "/designs/all/Mughal/Engagement/Save the date , E invite card #einvite #onlinecard #likesforlike #viratkohli 🎉.jpg": {
+  "/designs/all/Mughal/Engagement/Save the date , E invite card #einvite #onlinecard #likesforlike #viratkohli \ud83c\udf89.jpg": {
     "avif": {},
     "webp": {
       "480": "/designs/opt/Mughal/Engagement/Save_the_date___E_invite_card__einvite__onlinecard-18e361d218-480.webp",
@@ -1933,40 +1716,6 @@
     "dominant": "#f8f8f8",
     "width": 2560,
     "height": 4480
-  },
-  "/designs/all/Mughal/Haldi/Haldi vibes Layout.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Mughal/Haldi/Haldi vibes Layout-480.webp",
-      "960": "/designs/opt/Mughal/Haldi/Haldi vibes Layout-960.webp",
-      "1440": "/designs/opt/Mughal/Haldi/Haldi vibes Layout-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Mughal/Haldi/Haldi vibes Layout-480.jpg",
-      "960": "/designs/opt/Mughal/Haldi/Haldi vibes Layout-960.jpg",
-      "1440": "/designs/opt/Mughal/Haldi/Haldi vibes Layout-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRjIBAABXRUJQVlA4ICYBAAAwBwCdASoYACsAPulcqE6pJSQiNVv8ASAdCWoAnTMpgfhKmfBnyMjRf+Klc9DmRjvmn3HhVgV8i3Pe/cBoXorvzgAA/t/RLgoEfB/FfVsNxnvprkc1g9nay4zNPDZDMAB7YWJP0lwOiC8PDnW3dpsT4M98RNnxfF041mYEt9MHbepkvyFDfoi5iOA7vbaYvoS4rK0A5CC+WdgHJ/fWgdhvIgu2xO7FTDAklFfOgXjn3xBijALKwc1CsqsSDzH6PZmxAbiKjnWd8O69YWiP2CKeb/WbJR01Ea39qat8o32ROEVgCLyWJPDVw0dp1+xxtXbVQ/4VqPflp57AcU06QrDs+Lkxt8VGlHzgfwA+sJp4bDVoLRunKDqPW/lGIaElr7Pcyph8+AA=",
-    "dominant": "#f8f8e8",
-    "width": 2560,
-    "height": 4552
-  },
-  "/designs/all/Mughal/Haldi/download.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Mughal/Haldi/download-480.webp",
-      "960": "/designs/opt/Mughal/Haldi/download-960.webp",
-      "1440": "/designs/opt/Mughal/Haldi/download-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Mughal/Haldi/download-480.jpg",
-      "960": "/designs/opt/Mughal/Haldi/download-960.jpg",
-      "1440": "/designs/opt/Mughal/Haldi/download-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRiYBAABXRUJQVlA4IBoBAABwBwCdASoYACsAPwFwrFKrJiOiqrgMAWAgCWwAsR8cip+p8WhF3Ud4nnUuWhKlp1w2Cvt+/yzassdpNElyCl8R9PSAAAD+kMXS+N+uTko5dsM1+BxDMBGaz8b+StmYinez61C6SmZri/uaAcfYB0ffFztK96dWDDVr4dYXhp6FnmHP+aKrnFwZT12FCoDn2J56OBLUhA7qnaRc9bRKlUWWz8WMBozVJRCjNKtPLTvFnHDvvfHWxxyNglXCXSYaVyPrD9TJcSrkVvkJ/II3hsNLWLmLXXzUxQUiXT1J8t2SA+Nmww6Wm66+whKZDwhN9ZkNH+34VWnyKAx/g9Vz88Dr8GP6GNIe96XRY9b4tq22O+6vcxGV2IgAAAA=",
-    "dominant": "#f8f8e8",
-    "width": 2560,
-    "height": 4549
   },
   "/designs/all/Mughal/Marriage/3173d9216524700e93025f232b185831.jpg": {
     "avif": {},
@@ -2121,23 +1870,6 @@
     "width": 2560,
     "height": 4565
   },
-  "/designs/all/Mughal/Sangeeth/Editable Pink Mehndi Welcome Sign & Invitation _ 2 in 1 Sangeet Dholki Canva Template Bundle.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Mughal/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-480.webp",
-      "960": "/designs/opt/Mughal/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-960.webp",
-      "1440": "/designs/opt/Mughal/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Mughal/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-480.jpg",
-      "960": "/designs/opt/Mughal/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-960.jpg",
-      "1440": "/designs/opt/Mughal/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRggBAABXRUJQVlA4IPwAAACwBgCdASoYACIAPwFwr1MrJaQiqrgKAWAgCWYAtvfxwoMDrb/AH1iv9QylpCajZ4BYioe0MpGRzWc0wMHMIAD+nqLX8dkXw7BesESJ5JIjdw5Sc+vG2Vajkhm2+HAVK5vby/C/AYyx7Kjuyev+wxSir14Lfu3pGRnG5wPR3H/k03nBfsIenan8UFNVXyY4jbSsTcBrCxFewDi0Ic2SBuuveyv0WXW+T0WLtGaRkmtuNcdS/F8azcDTCJY5Z32CZJqJHUoFHNPvATDYujbDg/D7fz6C9XgQc/CLdpUhjnzgFMjZPNopEruQgDDUd2y1TK3Q8ez/Tn3DsmtQAAA=",
-    "dominant": "#b83848",
-    "width": 2560,
-    "height": 3582
-  },
   "/designs/all/Mughal/Sangeeth/download (1).jpg": {
     "avif": {},
     "webp": {
@@ -2239,40 +1971,6 @@
     "dominant": "#f8f8f8",
     "width": 2560,
     "height": 4480
-  },
-  "/designs/all/Muslim/Haldi/Haldi vibes Layout.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Muslim/Haldi/Haldi vibes Layout-480.webp",
-      "960": "/designs/opt/Muslim/Haldi/Haldi vibes Layout-960.webp",
-      "1440": "/designs/opt/Muslim/Haldi/Haldi vibes Layout-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Muslim/Haldi/Haldi vibes Layout-480.jpg",
-      "960": "/designs/opt/Muslim/Haldi/Haldi vibes Layout-960.jpg",
-      "1440": "/designs/opt/Muslim/Haldi/Haldi vibes Layout-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRjIBAABXRUJQVlA4ICYBAAAwBwCdASoYACsAPulcqE6pJSQiNVv8ASAdCWoAnTMpgfhKmfBnyMjRf+Klc9DmRjvmn3HhVgV8i3Pe/cBoXorvzgAA/t/RLgoEfB/FfVsNxnvprkc1g9nay4zNPDZDMAB7YWJP0lwOiC8PDnW3dpsT4M98RNnxfF041mYEt9MHbepkvyFDfoi5iOA7vbaYvoS4rK0A5CC+WdgHJ/fWgdhvIgu2xO7FTDAklFfOgXjn3xBijALKwc1CsqsSDzH6PZmxAbiKjnWd8O69YWiP2CKeb/WbJR01Ea39qat8o32ROEVgCLyWJPDVw0dp1+xxtXbVQ/4VqPflp57AcU06QrDs+Lkxt8VGlHzgfwA+sJp4bDVoLRunKDqPW/lGIaElr7Pcyph8+AA=",
-    "dominant": "#f8f8e8",
-    "width": 2560,
-    "height": 4552
-  },
-  "/designs/all/Muslim/Haldi/Mehendi invitation template.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Muslim/Haldi/Mehendi invitation template-480.webp",
-      "960": "/designs/opt/Muslim/Haldi/Mehendi invitation template-960.webp",
-      "1440": "/designs/opt/Muslim/Haldi/Mehendi invitation template-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Muslim/Haldi/Mehendi invitation template-480.jpg",
-      "960": "/designs/opt/Muslim/Haldi/Mehendi invitation template-960.jpg",
-      "1440": "/designs/opt/Muslim/Haldi/Mehendi invitation template-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRuoAAABXRUJQVlA4IN4AAACQBgCdASoYACIAPwF2slMrJySipWsxYCAJaACxH0dJGAhXgA4UYqsn1g/UxoSjj4rElHnvAx/ajYK7yCOgAPW8sqqKi/JPH1R1YNGLeDdzSWjTqcwscAbTyUMdXqdAAQy4hXXuM2MNKvDSDjN+OAQFhr3hIm+jso+MBCX/r7USwSYBJ9n1foNn3jeGaYz2eHHmPnO3IdGBmHLgRtA5u9N4UVmvJdxzR2LrUA/umxwMYoUzWeAJHqE2L4Q0Jq7JN0awIEIBGvTDTZ5G7CL4La4HBBsWrDuD25auCJLmCAA=",
-    "dominant": "#e8b858",
-    "width": 2560,
-    "height": 3608
   },
   "/designs/all/Muslim/Marriage/download (1).jpg": {
     "avif": {},
@@ -2427,23 +2125,6 @@
     "width": 2560,
     "height": 3840
   },
-  "/designs/all/Muslim/Sangeeth/Editable Pink Mehndi Welcome Sign & Invitation _ 2 in 1 Sangeet Dholki Canva Template Bundle.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Muslim/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-480.webp",
-      "960": "/designs/opt/Muslim/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-960.webp",
-      "1440": "/designs/opt/Muslim/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Muslim/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-480.jpg",
-      "960": "/designs/opt/Muslim/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-960.jpg",
-      "1440": "/designs/opt/Muslim/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRggBAABXRUJQVlA4IPwAAACwBgCdASoYACIAPwFwr1MrJaQiqrgKAWAgCWYAtvfxwoMDrb/AH1iv9QylpCajZ4BYioe0MpGRzWc0wMHMIAD+nqLX8dkXw7BesESJ5JIjdw5Sc+vG2Vajkhm2+HAVK5vby/C/AYyx7Kjuyev+wxSir14Lfu3pGRnG5wPR3H/k03nBfsIenan8UFNVXyY4jbSsTcBrCxFewDi0Ic2SBuuveyv0WXW+T0WLtGaRkmtuNcdS/F8azcDTCJY5Z32CZJqJHUoFHNPvATDYujbDg/D7fz6C9XgQc/CLdpUhjnzgFMjZPNopEruQgDDUd2y1TK3Q8ez/Tn3DsmtQAAA=",
-    "dominant": "#b83848",
-    "width": 2560,
-    "height": 3582
-  },
   "/designs/all/Muslim/Sangeeth/download (1).jpg": {
     "avif": {},
     "webp": {
@@ -2545,40 +2226,6 @@
     "dominant": "#f8f8f8",
     "width": 2560,
     "height": 4480
-  },
-  "/designs/all/Nature/Haldi/Haldi vibes Layout.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Nature/Haldi/Haldi vibes Layout-480.webp",
-      "960": "/designs/opt/Nature/Haldi/Haldi vibes Layout-960.webp",
-      "1440": "/designs/opt/Nature/Haldi/Haldi vibes Layout-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Nature/Haldi/Haldi vibes Layout-480.jpg",
-      "960": "/designs/opt/Nature/Haldi/Haldi vibes Layout-960.jpg",
-      "1440": "/designs/opt/Nature/Haldi/Haldi vibes Layout-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRjIBAABXRUJQVlA4ICYBAAAwBwCdASoYACsAPulcqE6pJSQiNVv8ASAdCWoAnTMpgfhKmfBnyMjRf+Klc9DmRjvmn3HhVgV8i3Pe/cBoXorvzgAA/t/RLgoEfB/FfVsNxnvprkc1g9nay4zNPDZDMAB7YWJP0lwOiC8PDnW3dpsT4M98RNnxfF041mYEt9MHbepkvyFDfoi5iOA7vbaYvoS4rK0A5CC+WdgHJ/fWgdhvIgu2xO7FTDAklFfOgXjn3xBijALKwc1CsqsSDzH6PZmxAbiKjnWd8O69YWiP2CKeb/WbJR01Ea39qat8o32ROEVgCLyWJPDVw0dp1+xxtXbVQ/4VqPflp57AcU06QrDs+Lkxt8VGlHzgfwA+sJp4bDVoLRunKDqPW/lGIaElr7Pcyph8+AA=",
-    "dominant": "#f8f8e8",
-    "width": 2560,
-    "height": 4552
-  },
-  "/designs/all/Nature/Haldi/download.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Nature/Haldi/download-480.webp",
-      "960": "/designs/opt/Nature/Haldi/download-960.webp",
-      "1440": "/designs/opt/Nature/Haldi/download-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Nature/Haldi/download-480.jpg",
-      "960": "/designs/opt/Nature/Haldi/download-960.jpg",
-      "1440": "/designs/opt/Nature/Haldi/download-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRiYBAABXRUJQVlA4IBoBAABwBwCdASoYACsAPwFwrFKrJiOiqrgMAWAgCWwAsR8cip+p8WhF3Ud4nnUuWhKlp1w2Cvt+/yzassdpNElyCl8R9PSAAAD+kMXS+N+uTko5dsM1+BxDMBGaz8b+StmYinez61C6SmZri/uaAcfYB0ffFztK96dWDDVr4dYXhp6FnmHP+aKrnFwZT12FCoDn2J56OBLUhA7qnaRc9bRKlUWWz8WMBozVJRCjNKtPLTvFnHDvvfHWxxyNglXCXSYaVyPrD9TJcSrkVvkJ/II3hsNLWLmLXXzUxQUiXT1J8t2SA+Nmww6Wm66+whKZDwhN9ZkNH+34VWnyKAx/g9Vz88Dr8GP6GNIe96XRY9b4tq22O+6vcxGV2IgAAAA=",
-    "dominant": "#f8f8e8",
-    "width": 2560,
-    "height": 4549
   },
   "/designs/all/Nature/Marriage/IMG-20260518-WA0023.jpg": {
     "avif": {},
@@ -2733,23 +2380,6 @@
     "width": 2560,
     "height": 4551
   },
-  "/designs/all/Nature/Sangeeth/Editable Pink Mehndi Welcome Sign & Invitation _ 2 in 1 Sangeet Dholki Canva Template Bundle.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Nature/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-480.webp",
-      "960": "/designs/opt/Nature/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-960.webp",
-      "1440": "/designs/opt/Nature/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Nature/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-480.jpg",
-      "960": "/designs/opt/Nature/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-960.jpg",
-      "1440": "/designs/opt/Nature/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRggBAABXRUJQVlA4IPwAAACwBgCdASoYACIAPwFwr1MrJaQiqrgKAWAgCWYAtvfxwoMDrb/AH1iv9QylpCajZ4BYioe0MpGRzWc0wMHMIAD+nqLX8dkXw7BesESJ5JIjdw5Sc+vG2Vajkhm2+HAVK5vby/C/AYyx7Kjuyev+wxSir14Lfu3pGRnG5wPR3H/k03nBfsIenan8UFNVXyY4jbSsTcBrCxFewDi0Ic2SBuuveyv0WXW+T0WLtGaRkmtuNcdS/F8azcDTCJY5Z32CZJqJHUoFHNPvATDYujbDg/D7fz6C9XgQc/CLdpUhjnzgFMjZPNopEruQgDDUd2y1TK3Q8ez/Tn3DsmtQAAA=",
-    "dominant": "#b83848",
-    "width": 2560,
-    "height": 3582
-  },
   "/designs/all/Nature/Sangeeth/download (1).jpg": {
     "avif": {},
     "webp": {
@@ -2851,40 +2481,6 @@
     "dominant": "#f8f8f8",
     "width": 2560,
     "height": 4480
-  },
-  "/designs/all/Punjabi/Haldi/Haldi vibes Layout.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Punjabi/Haldi/Haldi vibes Layout-480.webp",
-      "960": "/designs/opt/Punjabi/Haldi/Haldi vibes Layout-960.webp",
-      "1440": "/designs/opt/Punjabi/Haldi/Haldi vibes Layout-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Punjabi/Haldi/Haldi vibes Layout-480.jpg",
-      "960": "/designs/opt/Punjabi/Haldi/Haldi vibes Layout-960.jpg",
-      "1440": "/designs/opt/Punjabi/Haldi/Haldi vibes Layout-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRjIBAABXRUJQVlA4ICYBAAAwBwCdASoYACsAPulcqE6pJSQiNVv8ASAdCWoAnTMpgfhKmfBnyMjRf+Klc9DmRjvmn3HhVgV8i3Pe/cBoXorvzgAA/t/RLgoEfB/FfVsNxnvprkc1g9nay4zNPDZDMAB7YWJP0lwOiC8PDnW3dpsT4M98RNnxfF041mYEt9MHbepkvyFDfoi5iOA7vbaYvoS4rK0A5CC+WdgHJ/fWgdhvIgu2xO7FTDAklFfOgXjn3xBijALKwc1CsqsSDzH6PZmxAbiKjnWd8O69YWiP2CKeb/WbJR01Ea39qat8o32ROEVgCLyWJPDVw0dp1+xxtXbVQ/4VqPflp57AcU06QrDs+Lkxt8VGlHzgfwA+sJp4bDVoLRunKDqPW/lGIaElr7Pcyph8+AA=",
-    "dominant": "#f8f8e8",
-    "width": 2560,
-    "height": 4552
-  },
-  "/designs/all/Punjabi/Haldi/download (1).jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Punjabi/Haldi/download (1)-480.webp",
-      "960": "/designs/opt/Punjabi/Haldi/download (1)-960.webp",
-      "1440": "/designs/opt/Punjabi/Haldi/download (1)-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Punjabi/Haldi/download (1)-480.jpg",
-      "960": "/designs/opt/Punjabi/Haldi/download (1)-960.jpg",
-      "1440": "/designs/opt/Punjabi/Haldi/download (1)-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRkgBAABXRUJQVlA4IDwBAACQBwCdASoYACsAPv1gqU6rJSOiMBqtUWAfiWwArDLA8BSec+xZOn/IR/qPPd37WK10j21kZb4EQX60Rf1M9cnLRyCTIAAA9yyX+Xbi6BR1Pluqf+h4HAShVPqDReFv5scQ1No3lVmwid9MloICDcYUllxAxPG5Y0QH4c+qIrMQCAyxAqNuyHcNfD5vX25YUhgyanA4EAi9cbFkAFOejHD9a23SqyDrDx4Gx4Cv6CBLfZuYzUN8Qv9Pgazcl8CohIl/s5Zrfwlgmm0Q9BrZsAbTkL5ShKF9rzc0qp6uRiqW/dZVd6Ry9CIKW+okzO/ifcxDGTGNpS2xWCakNrjkEqpg/+GbyGLjCAKpHTxMwq/UBl05IUg63m4PJA4lZbl/ZA+zi6PuIzdyeJrmz9aRb+pAjzbxL5iZ/9KBfAAA",
-    "dominant": "#f8d8d8",
-    "width": 2560,
-    "height": 4551
   },
   "/designs/all/Punjabi/Haldi/no-text-haldi-courtyard.png": {
     "avif": {},
@@ -3052,23 +2648,6 @@
     "width": 2560,
     "height": 4549
   },
-  "/designs/all/Punjabi/Sangeeth/Editable Pink Mehndi Welcome Sign & Invitation _ 2 in 1 Sangeet Dholki Canva Template Bundle.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Punjabi/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-480.webp",
-      "960": "/designs/opt/Punjabi/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-960.webp",
-      "1440": "/designs/opt/Punjabi/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Punjabi/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-480.jpg",
-      "960": "/designs/opt/Punjabi/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-960.jpg",
-      "1440": "/designs/opt/Punjabi/Sangeeth/Editable_Pink_Mehndi_Welcome_Sign___Invitation___2-ca90a5510e-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRggBAABXRUJQVlA4IPwAAACwBgCdASoYACIAPwFwr1MrJaQiqrgKAWAgCWYAtvfxwoMDrb/AH1iv9QylpCajZ4BYioe0MpGRzWc0wMHMIAD+nqLX8dkXw7BesESJ5JIjdw5Sc+vG2Vajkhm2+HAVK5vby/C/AYyx7Kjuyev+wxSir14Lfu3pGRnG5wPR3H/k03nBfsIenan8UFNVXyY4jbSsTcBrCxFewDi0Ic2SBuuveyv0WXW+T0WLtGaRkmtuNcdS/F8azcDTCJY5Z32CZJqJHUoFHNPvATDYujbDg/D7fz6C9XgQc/CLdpUhjnzgFMjZPNopEruQgDDUd2y1TK3Q8ez/Tn3DsmtQAAA=",
-    "dominant": "#b83848",
-    "width": 2560,
-    "height": 3582
-  },
   "/designs/all/Punjabi/Sangeeth/download (1).jpg": {
     "avif": {},
     "webp": {
@@ -3209,40 +2788,6 @@
     "dominant": "#f8f8f8",
     "width": 2560,
     "height": 4480
-  },
-  "/designs/all/Temple/Haldi/Haldi vibes Layout.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Temple/Haldi/Haldi vibes Layout-480.webp",
-      "960": "/designs/opt/Temple/Haldi/Haldi vibes Layout-960.webp",
-      "1440": "/designs/opt/Temple/Haldi/Haldi vibes Layout-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Temple/Haldi/Haldi vibes Layout-480.jpg",
-      "960": "/designs/opt/Temple/Haldi/Haldi vibes Layout-960.jpg",
-      "1440": "/designs/opt/Temple/Haldi/Haldi vibes Layout-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRjIBAABXRUJQVlA4ICYBAAAwBwCdASoYACsAPulcqE6pJSQiNVv8ASAdCWoAnTMpgfhKmfBnyMjRf+Klc9DmRjvmn3HhVgV8i3Pe/cBoXorvzgAA/t/RLgoEfB/FfVsNxnvprkc1g9nay4zNPDZDMAB7YWJP0lwOiC8PDnW3dpsT4M98RNnxfF041mYEt9MHbepkvyFDfoi5iOA7vbaYvoS4rK0A5CC+WdgHJ/fWgdhvIgu2xO7FTDAklFfOgXjn3xBijALKwc1CsqsSDzH6PZmxAbiKjnWd8O69YWiP2CKeb/WbJR01Ea39qat8o32ROEVgCLyWJPDVw0dp1+xxtXbVQ/4VqPflp57AcU06QrDs+Lkxt8VGlHzgfwA+sJp4bDVoLRunKDqPW/lGIaElr7Pcyph8+AA=",
-    "dominant": "#f8f8e8",
-    "width": 2560,
-    "height": 4552
-  },
-  "/designs/all/Temple/Haldi/download.jpg": {
-    "avif": {},
-    "webp": {
-      "480": "/designs/opt/Temple/Haldi/download-480.webp",
-      "960": "/designs/opt/Temple/Haldi/download-960.webp",
-      "1440": "/designs/opt/Temple/Haldi/download-1440.webp"
-    },
-    "jpg": {
-      "480": "/designs/opt/Temple/Haldi/download-480.jpg",
-      "960": "/designs/opt/Temple/Haldi/download-960.jpg",
-      "1440": "/designs/opt/Temple/Haldi/download-1440.jpg"
-    },
-    "lqip": "data:image/webp;base64,UklGRiYBAABXRUJQVlA4IBoBAABwBwCdASoYACsAPwFwrFKrJiOiqrgMAWAgCWwAsR8cip+p8WhF3Ud4nnUuWhKlp1w2Cvt+/yzassdpNElyCl8R9PSAAAD+kMXS+N+uTko5dsM1+BxDMBGaz8b+StmYinez61C6SmZri/uaAcfYB0ffFztK96dWDDVr4dYXhp6FnmHP+aKrnFwZT12FCoDn2J56OBLUhA7qnaRc9bRKlUWWz8WMBozVJRCjNKtPLTvFnHDvvfHWxxyNglXCXSYaVyPrD9TJcSrkVvkJ/II3hsNLWLmLXXzUxQUiXT1J8t2SA+Nmww6Wm66+whKZDwhN9ZkNH+34VWnyKAx/g9Vz88Dr8GP6GNIe96XRY9b4tq22O+6vcxGV2IgAAAA=",
-    "dominant": "#f8f8e8",
-    "width": 2560,
-    "height": 4549
   },
   "/designs/all/Temple/Marriage/20eb98a3493ac23cbfeff42de6ffda62.jpg": {
     "avif": {},
