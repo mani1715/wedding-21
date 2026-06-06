@@ -61,7 +61,16 @@ export default function PurchaseOptionsWizard() {
 
   useEffect(() => {
     if (loading) return;
-    if (!user) { navigate('/', { replace: true }); return; }
+    if (!user) {
+      // Previously: navigate('/', { replace: true }) — this silently bounced
+      // the user back to the landing page when they clicked "Buy this theme"
+      // without being signed in (it looked like a broken page reload).
+      // Now we send them home with a query that auto-opens the sign-in modal
+      // and remembers where to come back to after login.
+      const here = window.location.pathname + window.location.search;
+      navigate(`/?signin=1&return=${encodeURIComponent(here)}`, { replace: true });
+      return;
+    }
   }, [loading, user, navigate]);
 
   // ── Load catalogue + pricing

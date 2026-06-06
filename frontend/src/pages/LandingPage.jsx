@@ -972,11 +972,41 @@ const LandingPage = () => {
   const { user, logout, refresh } = useUserAuth();
   const [authModal, setAuthModal] = useState({ open: false, mode: 'login' });
   const [showCredits, setShowCredits] = useState(false);
+  // Honour `?signin=1&return=/user/buy-theme/<id>` so the "Buy this theme"
+  // button on each card can ask unauthenticated users to sign in and then
+  // bounce them straight to the purchase wizard.
+  const [returnAfterLogin, setReturnAfterLogin] = useState(null);
 
   useEffect(() => {
     document.body.classList.add('luxe', 'luxe-grain', 'luxe-vignette');
     return () => document.body.classList.remove('luxe', 'luxe-grain', 'luxe-vignette');
   }, []);
+
+  // On mount: if the URL is /?signin=1&return=..., open the auth modal.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('signin') === '1') {
+      const ret = params.get('return') || '';
+      // Same-origin guard: only honour relative paths.
+      if (ret.startsWith('/') && !ret.startsWith('//')) setReturnAfterLogin(ret);
+      setAuthModal({ open: true, mode: 'login' });
+      // Clean the URL so refreshes don't keep re-opening the modal.
+      const url = new URL(window.location.href);
+      url.searchParams.delete('signin');
+      url.searchParams.delete('return');
+      window.history.replaceState({}, '', url.pathname + (url.search ? `?${url.searchParams}` : '') + url.hash);
+    }
+  }, []);
+
+  // Once the user is signed in and a return path was captured, ship them there.
+  useEffect(() => {
+    if (user && returnAfterLogin) {
+      const target = returnAfterLogin;
+      setReturnAfterLogin(null);
+      setAuthModal({ open: false, mode: 'login' });
+      navigate(target);
+    }
+  }, [user, returnAfterLogin, navigate]);
 
   const openBuyCredits = () => {
     if (!user) { setAuthModal({ open: true, mode: 'signup' }); return; }

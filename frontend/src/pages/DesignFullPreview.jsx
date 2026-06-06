@@ -134,6 +134,13 @@ const DesignFullPreview = () => {
   const textOnBg = isLightColor(pageBg) ? '#1A0F08' : '#FFF8DC';
   const mutedText = isLightColor(pageBg) ? 'rgba(40,26,16,0.78)' : 'rgba(255,248,220,0.85)';
 
+  // User-requested change (2026-06-06):
+  //   The previous backdrop layered a heavy `pageBg` tint + animated particles
+  //   over the design artwork, dulling beautiful pieces like the Kerala
+  //   backwaters illustration. Keep the page wrapper TRANSPARENT so the
+  //   `SoftDesignBackdrop` image (now displayed crisply) is the actual page
+  //   background. A readable text colour is still computed against the
+  //   original tokens.background palette so headings stay legible.
   useEffect(() => {
     // Remove dark overlays and set LIGHT background
     document.body.classList.remove('luxe', 'luxe-grain', 'luxe-vignette');
@@ -179,9 +186,6 @@ const DesignFullPreview = () => {
 
   return (
     <AnimationProvider>
-      {/* 3D Animated Background for Design Preview */}
-      <ThemeAnimatedBackground theme={themeId} />
-      
       {/* Per-theme cinematic opening — fires once per session per theme.
           Until the opening is done the rest of the page stays hidden. */}
       {!openingDone && (
@@ -199,14 +203,18 @@ const DesignFullPreview = () => {
       <div
         className="relative"
         style={{
-          background: pageBg, color: textOnBg, minHeight: '100vh',
+          // TRANSPARENT wrapper — the design image (via SoftDesignBackdrop)
+          // is now the page background. Previously this was `background: pageBg`
+          // which painted a solid dark colour over the artwork.
+          background: 'transparent',
+          color: textOnBg, minHeight: '100vh',
           opacity: openingDone ? 1 : 0,
           pointerEvents: openingDone ? 'auto' : 'none',
           transition: 'opacity 0.55s ease',
         }}
         data-testid={`design-full-preview-${themeId}-${event.toLowerCase()}-${idx}`}
       >
-        {/* ── SOFT DESIGN-THEMED PAGE BACKDROP (fixed, low opacity) ─── */}
+        {/* ── DESIGN IMAGE PAGE BACKGROUND (fixed, edge-to-edge, visible) ─── */}
         <SoftDesignBackdrop image={imgUrl} accent={accent} pageBg={pageBg} />
 
         {/* ── Top controls ── */}
@@ -677,17 +685,10 @@ const SoftDesignBackdrop = ({ image, accent, pageBg = '#1A130B' }) => {
   }
   return (
     <>
-      {/* Solid base colour underneath in case the image is still loading */}
-      <div
-        aria-hidden
-        style={{
-          position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
-          background: pageBg,
-        }}
-      />
-      {/* The actual design image, full-bleed, softened so the centred hero
-          card remains the visual focal point. `cover` ensures it fills the
-          viewport on every screen size. */}
+      {/* The design image is the page background — full-bleed, crisp, no
+          heavy blur or dark tint. User explicitly asked (2026-06-06) for
+          the artwork itself (e.g. Kerala palms / brass lamps) to be the
+          visible background instead of a teal / black overlay. */}
       <img
         aria-hidden
         src={image}
@@ -698,27 +699,18 @@ const SoftDesignBackdrop = ({ image, accent, pageBg = '#1A130B' }) => {
         style={{
           position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
           width: '100%', height: '100%', objectFit: 'cover',
-          // soft blur + slight scale to avoid hard crop edges
-          filter: 'blur(28px) saturate(1.1)',
-          transform: 'scale(1.08)',
+          // Very mild softening to avoid hard crop edges on ultra-wide
+          // screens. Crisp enough that the artwork stays recognisable.
+          filter: 'blur(4px) saturate(1.05)',
+          transform: 'scale(1.04)',
           transformOrigin: 'center center',
-          opacity: 0.65,
+          opacity: 1,
           willChange: 'transform',
         }}
+        data-testid="design-page-background"
       />
-      {/* Tinting wash: keeps text legible on top of any image, and lets the
-          design's natural palette (pageBg) breathe through. */}
-      <div
-        aria-hidden
-        style={{
-          position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
-          background: `
-            radial-gradient(ellipse at center, transparent 0%, ${pageBg}66 70%, ${pageBg}AA 100%),
-            linear-gradient(180deg, ${pageBg}33 0%, ${pageBg}55 100%)
-          `,
-        }}
-      />
-      {/* Soft accent orbs — kept from previous design for cinematic feel */}
+      {/* Soft accent orbs — kept from previous design for cinematic feel.
+          Heavy `pageBg` tinting wash was REMOVED so the artwork shows. */}
       <div
         aria-hidden
         style={{
